@@ -1,0 +1,63 @@
+body{
+	background-color: #FFF;
+}
+#wrapper{
+	background-color: #000;
+	width: 300px;
+	padding: 10px;
+	color: #66FF66;
+	font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+#title-bar{
+	width: 100%;
+	font-weight: bold;
+	padding: 3px;
+	border-bottom: 1px dashed #FFF;
+}
+
+#main .info-title{
+    font-weight: bold;
+}
+
+#main .info-label{
+	padding-left:15px;
+}
+
+#main .info-link,#main .info-label{
+	background-color: #000;
+	font-size: 8pt;
+	color: #FFF;
+}
+
+#anime-suggestions {
+	display: none;
+}
+
+#overlay { 
+	background: #000; 
+}
+
+.rq-form-element{
+	background-color: #000;
+	border: 0px solid #FFF;
+	color: #FFF;
+}
+
+.cursor	i {
+	background-color: #FFF;
+}
+
+.anime-thumbnail{
+	display:none;
+}
+
+#settings #settings-title{
+	font-weight: bold;
+}
+
+#save-settings{
+	float: right;
+	font-size: 15pt;
+	height: 20px;
+}

@@ -1,4 +1,5 @@
 var themes = {
+  Console: "Console",
   BlackWhite: "BlackWhite",
   Smooth: "Smooth"
 };
