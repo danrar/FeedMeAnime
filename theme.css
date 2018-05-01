@@ -1,0 +1,95 @@
+#main .info-link::-webkit-scrollbar, #main .info-label::-webkit-scrollbar { 
+    display: none; 
+}
+
+#anime-info{
+	display: none;
+}
+
+#feed-info{
+	display: none;
+}
+
+#settings{
+	display: none;
+}
+
+#overlay { 
+	position: absolute; 
+	top: 0; 
+	left: 0; 
+	width: 100%; 
+	height: 100%; 
+	opacity: 0; 
+	z-index: 99;
+	display: none;
+}
+
+#controls{
+	display: none;
+}
+
+#anime-input, #feed-input{
+	display: none;
+}
+
+#title-bar{	
+	display: flex;
+}
+
+#title{
+	flex: 1 0 auto;
+}
+
+#functions{
+	flex: 0 0 auto;
+}
+
+.icon{
+	display: inline;
+}
+
+#content-bar{
+	position: relative;
+	word-wrap: break-word;
+}
+
+#main .info-link,#main .info-label{
+	white-space: nowrap;
+	padding:0 5px 0 15px;
+    border: none;
+
+}
+
+#anime-suggestions{
+	display: none;
+}
+
+.rq-form-element{
+	padding: 3px;
+}
+
+.cursor {
+	position: relative;
+}
+
+.cursor	i {
+	position: absolute;
+	width: 10px;
+	height: 3px;
+	left: 3px;
+	bottom: 15%;
+	animation-name: blink;
+	animation-duration: 1000ms;
+	animation-iteration-count: infinite;
+	opacity: 1;
+}
+
+.cursor input:focus + i {
+	display: none;
+}
+
+@keyframes blink {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}

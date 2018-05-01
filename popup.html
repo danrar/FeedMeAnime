@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Feed Me Anime</title>
+    <link rel="stylesheet" href="theme.css">
+    <script src="thirdParty/jquery-3.3.1.min.js"></script>
+    <script src="thirdParty/xml2json.js"></script>
+    <script src="thirdParty/fajs/js/fontawesome-all.min.js"></script>
+    <script src="popup.js"></script>
+<!-- https://kitsu.io/api/edge/anime?filter[status]=current&filter[subtype]=TV&page[limit]=20&page[offset]=0&sort=popularityRank&fields[anime]=canonicalTitle-->
+  </head>
+  <body>
+  	<div id="wrapper">
+  		<div id="title-bar">
+  			<div id="title">
+  				Feed Me Anime
+  			</div>
+  			<div id="functions">
+  				<div class="icon" id="sync"><i class="fa fa-list-alt"></i></div>
+   				<div class="icon" id="add-anime"><i class="fa fa-plus-circle"></i></div>
+          <div class="icon" id="add-feed"><i class="fa fa-cloud-download-alt"></i></div>
+          <div class="icon" id="change-settings"><i class="fa fa-wrench"></i></div>
+  			</div>
+  		</div>
+  		<div id="content-bar">
+  			<div id="overlay"></div>
+  		  	<div id="main" class="content">
+  		  	</div>
+  		  	<div id="anime-info" class="content">
+  		  	</div>
+  		  	<div id="feed-info" class="content">
+  		  	</div>
+          <div id="settings" class="content">
+            <div id="settings-title">Settings</div>
+            <div class="setting-option">
+              Theme
+              <select id="themes-select">
+              </select>
+            </div>
+            <div class="setting-option">
+              Filters
+              <div id="filter-configuration">
+              </div>
+            </div>
+            <div class="setting-option">
+              Sync'd Storage
+              <div id="storage-sync-text">
+              </div>
+            </div>
+            <div class="setting-option">
+              Local Storage
+              <div id="storage-local-text">
+              </div>
+            </div>
+            <!--<div class="setting-option">
+              Clear Storage
+              <div class="icon" id="clear-storage"><i class="fa fa-eraser"></i></div>
+            </div>-->
+            <div class="icon" id="save-settings" ><i class="far fa-save" alt="Save settings"></i></div>
+          </div>
+          <div id="controls" class="content">
+            <div class="cursor">
+              <input type="text" class="rq-form-element content" id="anime-input" />
+              <input type="text" class="rq-form-element content" id="feed-input" />
+            </div>
+          </div>
+          <div id="anime-suggestions" class="content">
+            <div id="anime-suggestions-title">
+              Suggestions
+            </div>
+            <div id="anime-suggestions-options">
+            </div>
+          </div>
+  		</div>
+  		<div id="footer">
+  		</div>
+  	</div>
+  </body>
+</html>

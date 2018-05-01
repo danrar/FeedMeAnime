@@ -1,0 +1,119 @@
+#wrapper {
+	background-color: #FFF;
+	width: 500px;
+	height: 500px;
+	padding: 10px;
+}
+
+#title-bar {
+	width: 100%;
+	font-weight: bold;
+	font-size: 20pt;
+	display: flex;
+	border-bottom: 1px solid #000;
+}
+
+input {
+	margin-top: 10px;
+}
+
+/*
+Main Page
+*/
+
+#main .info-title {
+    font-weight: bold;
+    font-size: 12pt;
+}
+
+#main .info-label {
+	padding-left: 15px;
+}
+
+#main .info-link,#main .info-label {
+	background-color: #FFF;
+	font-size: 10pt;
+	color: #000;
+	width: 300px
+}
+
+#main .anime-block {
+	overflow: hidden;
+	padding: 5px 3px;
+}
+
+#main #anime-info .anime-title {
+	font-size: 12pt;
+	padding: 3px;
+}
+
+#main .anime-thumbnail {
+	height: auto;
+	width: 100px;
+	float: left;
+	padding: 0 5px
+}
+
+/*
+Anime Management
+*/
+
+#anime-info #anime-info-title {
+	font-weight: bold;
+	padding: 5px 0 20px 0;
+	font-size: 16pt;
+}
+
+/*
+Anime Suggestions
+*/
+
+#anime-suggestions #anime-suggestions-title {
+	font-weight: bold;
+	padding:10px 0 5px 0;
+	font-size:16pt;
+}
+
+#anime-suggestions #anime-suggestions-options{
+	max-height: 350px;
+	overflow: auto;
+}
+
+/*
+Feed Management
+*/
+
+#feed-info #feed-info-title {
+	font-weight: bold;
+	padding: 5px 0 20px 0;
+	font-size: 16pt;
+}
+
+/*
+Settings
+*/
+
+#settings {
+	font-weight: bold;
+}
+
+#settings #settings-title {
+	padding-top: 5px;
+	font-weight: bold;
+	font-size: 14pt;
+}
+
+#settings #themes-select {
+	margin-left: 20px;
+}
+
+#settings .filter-feed, #settings .filter-value, #settings #storage-local-text, #settings #storage-sync-text {
+	font-weight: normal;
+    display: inline-block;
+    padding: 3px;
+}
+
+#save-settings {
+	float: right;
+	font-size: 30pt;
+}
