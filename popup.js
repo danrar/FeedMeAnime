@@ -275,6 +275,31 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+ $(document).on('click', '.change-label', function () {
+    var nickname = $(this).parent().data('nickname');
+    var title = $(this).parent().data('title');
+    var label = $(this).parent().data('label');
+
+    var newLabel = prompt("Give this anime a label?", label);
+
+    var index = anime.indexOf(nickname);
+    anime[index] = [nickname, title, newLabel];
+
+    reloadAnime();
+    chrome.storage.sync.set({ animeList: anime });
+    clearCache();
+    getDataUri($(this).data('imageurl'), function(dataUri) {
+      if (thumbnails){
+        thumbnails.push({title: nickname,data: dataUri});
+      } else {
+        thumbnails = [{title: title,data: dataUri}];
+      }
+
+      chrome.storage.local.set({thumbnailCache: thumbnails})
+    });
+  });
+  
+
   $(document).on('click', '#add-filter', function () {
     var feed = $('#filter-feed-input').val();
     var value = $('#filter-value-input').val();
@@ -405,16 +430,35 @@ function reloadAnime(){
   $('#anime-info').html('<div id="anime-info-title">Anime</div>');
   if(anime.length > 0){
     for(title of anime){
-      if(title.length < 3){
+      var animeTitle;
+      var animeNickname;
+      var animeLabelRaw = '';
+      var displaytext;
+
+      if(title.length < 4){
         var text = title[0];
         if(title[0] != title[1])
         {
-          text = title[0] + " - " + title[1]
+          displaytext = title[0] + " - " + title[1]
+        } else {
+          displaytext = title[1];
         }
-        $('#anime-info').append('<div data-nickname="'+ title[0] +'" data-title="'+ title[1] +'" class="anime-title"> '+ text +' <div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
+        animeNickname = title[0];
+        animeTitle = title[1];
       } else {
-        $('#anime-info').append('<div data-nickname="'+ title +'" data-title="'+ title +'" class="anime-title"> '+ title +' <div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
+        animeTitle = title;
+        animeNickname = title;
+        displayText = title;
       }
+
+      if (title.Length > 2)
+      {
+        var animeLabel = title[2];
+        animeLabelRaw = ' data-label="' + animeLabel + '"';
+        displaytext = displaytext + ' - ' + animeLabel;
+      }
+
+      $('#anime-info').append('<div data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"> '+ displaytext +' <div class="icon change-label"><i class="fa fa-pencil-alt"></i></div><div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
     }
   }
 }
@@ -556,3 +600,10 @@ function getDataUri(url, callback) {
       callback(canvas.toDataURL('image/png'));
   };
 }
+
+String.prototype.dasherize = function () {
+  console.log(this);
+  return this.replace(/[A-Z]/g, function (char, index) {
+    return (index !== 0 ? '-' : '') + char.toLowerCase();
+  });
+};
