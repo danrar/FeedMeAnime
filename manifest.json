@@ -3,7 +3,7 @@
 
   "name": "Feed Me Anime",
   "description": "RSS Feed to Magnet Link Parser",
-  "version": "1.0",
+  "version": "1.01",
   "background":
     {
         "scripts": ["thirdParty/jquery-3.3.1.min.js", "thirdParty/xml2json.js", "popup.js"],

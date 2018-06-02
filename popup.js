@@ -16,7 +16,7 @@ var thumbnails = [];
 var lastCacheTime = new Date();
 var loadTime = $.now();
 var settings = {
-  theme: themes.BlackWhite,
+  theme: themes.Smooth,
   labelAsTag: false
 };
 
@@ -30,11 +30,13 @@ var settings = {
 document.addEventListener('DOMContentLoaded', function() {
   chrome.storage.sync.get(["cacheSettings"], function(cache) {
 
-    if (cache.cacheSettings != "undefined"){
+    if (cache.cacheSettings != undefined){
       settings = cache.cacheSettings;
-      setSettings();
-    }
 
+    } 
+
+    setSettings();
+    
 
     //Default filters
     var key = "Nyaa.si";
@@ -122,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#overlay').animate({
          opacity: 1
        }, 500, function() {
-          setSettings();
           reloadFilters();
           reloadStorageStats();
           $('.content').hide();
@@ -347,10 +348,10 @@ function clearCache(){
   });
 }
 
-//function clearStorage(){
-//  chrome.storage.local.clear();
-//  chrome.storage.sync.clear();
-//}
+function clearStorage(){
+  chrome.storage.local.clear();
+  chrome.storage.sync.clear();
+}
 
 function parseRSS(rssUrl){
   var json = "";
@@ -544,10 +545,6 @@ function loadSuggestions(){
 }
 
 function setSettings(){
-  if (settings.theme == "undefined"){
-    settings.theme = themes.Smooth;
-  }
-
   $.each(themes, function(index, value){
     var select = '';
     if(settings.theme === value){
