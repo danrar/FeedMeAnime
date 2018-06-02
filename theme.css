@@ -47,6 +47,8 @@
 
 .icon{
 	display: inline;
+	margin-left: 4px;
+
 }
 
 #content-bar{
@@ -63,6 +65,10 @@
 
 #anime-suggestions{
 	display: none;
+}
+
+.anime-suggestion{
+	cursor: pointer;
 }
 
 .rq-form-element{

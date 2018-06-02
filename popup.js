@@ -16,7 +16,8 @@ var thumbnails = [];
 var lastCacheTime = new Date();
 var loadTime = $.now();
 var settings = {
-  theme: themes.BlackWhite
+  theme: themes.BlackWhite,
+  labelAsTag: false
 };
 
 
@@ -28,17 +29,12 @@ var settings = {
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.storage.sync.get(["cacheSettings"], function(cache) {
-    if (cache.cacheSettings.theme != "undefined"){
-      settings.theme = cache.cacheSettings.theme;
-      $.each(themes, function(index, value){
-        var select = '';
-        if(settings.theme === value){
-          $('#themes-select').append($('<option/>').attr('value', index).text(value).attr('selected','selected'));
-        } else{
-          $('#themes-select').append($('<option/>').attr('value', index).text(value));
-        }
-      });
+
+    if (cache.cacheSettings != "undefined"){
+      settings = cache.cacheSettings;
+      setSettings();
     }
+
 
     //Default filters
     var key = "Nyaa.si";
@@ -126,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#overlay').animate({
          opacity: 1
        }, 500, function() {
+          setSettings();
           reloadFilters();
           reloadStorageStats();
           $('.content').hide();
@@ -161,8 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
   //})
 
   $(document).on('click', '.remove-anime', function () {
-    animeTitle = getArrayInArray(anime, $(this).parent().data('nickname'))
-    var index = anime.indexOf(animeTitle);
+    index = $(this).parent().data('index');
     if (index > -1) {
       anime.splice(index, 1);
     }
@@ -197,6 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
       } 
     });
+
+    settings.labelAsTag = $('#label-tag-checkbox').prop('checked');
 
     chrome.storage.sync.set({ filters: filters });
 
@@ -254,9 +252,11 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   $(document).on('click', '.anime-suggestion', function () {
-    var title = $(this).data('title');
-    var nickname = prompt("Give this anime a nickname? (Leave blank for actual)", "");
-    if (!nickname) {
+    var title = $(this).parent().data('title');
+    var nickname = prompt("Give "+ title +" a nickname? (Leave blank for no nickname)");
+    if (nickname === null) {
+      return;
+    } else if (!nickname) {
       nickname = title;
     }
     var selection = [nickname, title];
@@ -276,14 +276,26 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
  $(document).on('click', '.change-label', function () {
+    var index = $(this).parent().data('index');
     var nickname = $(this).parent().data('nickname');
     var title = $(this).parent().data('title');
     var label = $(this).parent().data('label');
 
-    var newLabel = prompt("Give this anime a label?", label);
+    var newLabel = '';
 
-    var index = anime.indexOf(nickname);
-    anime[index] = [nickname, title, newLabel];
+    if(label){
+      newlabel = prompt("Change label for "+ nickname +"?", label)
+    } else {
+      newLabel = prompt("Give "+ nickname +" a label?");
+    }
+
+    if (newLabel === null) {
+      return;
+    } else if (newLabel){
+      anime[index] = [nickname, title, newLabel];
+    } else {
+      anime[index] = [nickname, title];
+    }
 
     reloadAnime();
     chrome.storage.sync.set({ animeList: anime });
@@ -420,7 +432,24 @@ function sync(){
           imgString = '<img class="anime-thumbnail" src="'+ thumb[0].data +'" />';
         }
       }
-      $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ title[0] +' (A)"><div class="icon clipboard-title-copy"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy"><i class="fa fa-copy"></i></div></div></div>');
+      var animeIdent = '';
+
+      if (settings.labelAsTag) {
+          if (title.length > 2){
+          animeIdent = title[2];
+        } else {
+          animeIdent = title[0];
+        }
+      } else {
+        animeIdent = title[0];
+      }
+
+      var defaultTag = "{0} (A)";
+
+      var tagText = defaultTag.format(animeIdent);
+
+      title[0]
+      $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ tagText +'"><div class="icon clipboard-title-copy"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy"><i class="fa fa-copy"></i></div></div></div>');
     });
   }
   
@@ -428,37 +457,40 @@ function sync(){
 
 function reloadAnime(){
   $('#anime-info').html('<div id="anime-info-title">Anime</div>');
-  if(anime.length > 0){
-    for(title of anime){
+  var animeLength = anime.length;
+  if(animeLength > 0){
+    for(var i = 0; i < animeLength; i++){
+    //for(title of anime){
       var animeTitle;
       var animeNickname;
       var animeLabelRaw = '';
       var displaytext;
 
-      if(title.length < 4){
-        var text = title[0];
-        if(title[0] != title[1])
+      if(anime[i].length < 4){
+        var text = anime[i][0];
+        if(anime[i][0] != anime[i][1])
         {
-          displaytext = title[0] + " - " + title[1]
+          displaytext = anime[i][0] + " - " + anime[i][1]
         } else {
-          displaytext = title[1];
+          displaytext = anime[i][1];
         }
-        animeNickname = title[0];
-        animeTitle = title[1];
+        animeNickname = anime[i][0];
+        animeTitle = anime[i][1];
       } else {
-        animeTitle = title;
-        animeNickname = title;
-        displayText = title;
+        animeTitle = anime[i];
+        animeNickname = anime[i];
+        displayText = anime[i];
       }
 
-      if (title.Length > 2)
+      if (anime[i].length > 2)
       {
-        var animeLabel = title[2];
+        var animeLabel = anime[i][2];
         animeLabelRaw = ' data-label="' + animeLabel + '"';
         displaytext = displaytext + ' - ' + animeLabel;
       }
 
-      $('#anime-info').append('<div data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"> '+ displaytext +' <div class="icon change-label"><i class="fa fa-pencil-alt"></i></div><div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
+
+      $('#anime-info').append('<div data-index="'+ i +'" data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"> '+ displaytext +' <div class="icon change-label"><i class="fa fa-pencil-alt"></i></div><div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
     }
   }
 }
@@ -511,17 +543,22 @@ function loadSuggestions(){
   
 }
 
-//function saveThumbnails(){
-//    getDataUri($(this).data('imageurl'), function(dataUri) {
-//      if (thumbnails){
-//        thumbnails.push({title: title,data: dataUri});
-//      } else {
-//        thumbnails = [{title: title,data: dataUri}];
-//      }
-//
-//      chrome.storage.local.set({thumbnails: thumbnails})
-//    });
-//}
+function setSettings(){
+  if (settings.theme == "undefined"){
+    settings.theme = themes.Smooth;
+  }
+
+  $.each(themes, function(index, value){
+    var select = '';
+    if(settings.theme === value){
+      $('#themes-select').append($('<option/>').attr('value', index).text(value).attr('selected','selected'));
+    } else{
+      $('#themes-select').append($('<option/>').attr('value', index).text(value));
+    }
+  });
+
+  $("#label-tag-checkbox").prop("checked", settings.labelAsTag);
+}
 
 function isItemInArray(array, item) {
     for (var i = 0; i < array.length; i++) {
@@ -607,3 +644,15 @@ String.prototype.dasherize = function () {
     return (index !== 0 ? '-' : '') + char.toLowerCase();
   });
 };
+
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
