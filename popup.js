@@ -6,7 +6,7 @@ var themes = {
 var animeListings = [];
 var anime = [];
 //anime [nickname, actual]
-var rss = [];
+var rss = [["Horrible Subs","http://horriblesubs.info/rss.php?res=1080"]];
 //var suggestions = new Array()
 var suggestions = [];
 //var filters = [];
@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } 
 
     setSettings();
-    
 
     //Default filters
     var key = "Nyaa.si";
@@ -92,6 +91,8 @@ document.addEventListener('DOMContentLoaded', function() {
        }, 500, function() {
           reloadAnime();
           loadSuggestions();
+          $('.active-tab').removeClass('active-tab');
+          $('#add-anime').addClass('active-tab');
           $('.content').hide();
           $('#anime-info').show();
           $('#anime-suggestions').show();
@@ -109,6 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
          opacity: 1
        }, 500, function() {
           reloadFeeds();
+          $('.active-tab').removeClass('active-tab');
+          $('#add-feed').addClass('active-tab');
           $('.content').hide();
           $('#feed-info').show();
           $('#controls').show();
@@ -126,6 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
        }, 500, function() {
           reloadFilters();
           reloadStorageStats();
+          $('.active-tab').removeClass('active-tab');
+          $('#change-settings').addClass('active-tab');
           $('.content').hide();
           $('#settings').show();
           $('#overlay').animate({ opacity: 0 }, 500, function(){
@@ -140,6 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
          opacity: 1
        }, 500, function() {
           sync();
+          $('.active-tab').removeClass('active-tab');
+          $('#sync').addClass('active-tab');
           $('.content').hide();
           $('#main').show();
           $('#overlay').animate({ opacity: 0 }, 500, function(){
@@ -253,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   $(document).on('click', '.anime-suggestion', function () {
-    var title = $(this).parent().data('title');
+    var title = $(this).data('title');
     var nickname = prompt("Give "+ title +" a nickname? (Leave blank for no nickname)");
     if (nickname === null) {
       return;
@@ -349,8 +356,12 @@ function clearCache(){
 }
 
 function clearStorage(){
-  chrome.storage.local.clear();
-  chrome.storage.sync.clear();
+  if(confirm("Are you sure you want to clear all storage?")){
+    chrome.storage.local.clear();
+    chrome.storage.sync.clear();
+  } else {
+    return;
+  }
 }
 
 function parseRSS(rssUrl){
@@ -405,14 +416,15 @@ function sync(){
           }
         });
 
-        //$(titleResults).each(function(i, object){
-        //  if(animeListings){
-        //    
-        //    animeListings.push(object)
-        //  } else {
-        //    animeListings = [object];
-        //  }
-        //});
+        $(titleResults).each(function(i, object){
+          if(!animeListings.includes(object)) {
+            if(animeListings){
+              animeListings.push(object)
+            } else {
+              animeListings = [object];
+            }
+          }
+        });
       }
     }
 
@@ -422,36 +434,43 @@ function sync(){
   }
 
   chrome.storage.local.set({ animeListings: animeListings });
-
-  for(title of anime) {
-    var results = getObjects(animeListings, 'title', title[0]);
-    $(results).each(function(i, object){
-      var imgString = '';
-      if(thumbnails){
-        var thumb = getObjects(thumbnails, 'title', title[0]);
-        if(thumb.length > 0){
-          imgString = '<img class="anime-thumbnail" src="'+ thumb[0].data +'" />';
-        }
+  if (animeListings.length > 0){
+    for(title of anime) {
+      var results = getObjects(animeListings, 'title', title[0]);
+      if (results.length == 0) {
+        results = getObjects(animeListings, 'title', title[1]);
       }
-      var animeIdent = '';
-
-      if (settings.labelAsTag) {
-          if (title.length > 2){
-          animeIdent = title[2];
+      $(results).each(function(i, object){
+        var imgString = '';
+        if(thumbnails){
+          var thumb = getObjects(thumbnails, 'title', title[0]);
+          if (thumb.length == 0){
+            thumb = getObjects(thumbnails, 'title', title[1]);
+          }
+          if(thumb.length > 0){
+            imgString = '<img class="anime-thumbnail" src="'+ thumb[0].data +'" />';
+          }
+        }
+        var animeIdent = '';
+  
+        if (settings.labelAsTag) {
+            if (title.length > 2){
+            animeIdent = title[2];
+          } else {
+            animeIdent = title[0];
+          }
         } else {
           animeIdent = title[0];
         }
-      } else {
-        animeIdent = title[0];
-      }
-
-      var defaultTag = "{0} (A)";
-
-      var tagText = defaultTag.format(animeIdent);
-
-      title[0]
-      $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ tagText +'"><div class="icon clipboard-title-copy"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy"><i class="fa fa-copy"></i></div></div></div>');
-    });
+  
+        var defaultTag = "{0} (A)";
+        var tagText = defaultTag.format(animeIdent);
+  
+        $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ tagText +'"><div class="icon clipboard-title-copy"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy"><i class="fa fa-copy"></i></div></div></div>');
+      });
+    }
+  } else {
+    $('#main').append('<div class="no-anime-text">No anime you are following are present in your RSS feeds currently.</div>');
   }
   
 }

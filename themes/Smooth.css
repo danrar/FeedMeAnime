@@ -13,6 +13,10 @@
 	border-bottom: 1px solid #000;
 }
 
+.active-tab {
+	color: #2e51a2
+}
+
 input {
 	margin-top: 10px;
 }
