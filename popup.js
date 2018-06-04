@@ -9,6 +9,7 @@ var anime = [];
 var rss = [["Horrible Subs","http://horriblesubs.info/rss.php?res=1080"]];
 //var suggestions = new Array()
 var suggestions = [];
+var suggestionsCount = 40;
 //var filters = [];
 var filters = {};
 var thumbnails = [];
@@ -70,10 +71,16 @@ document.addEventListener('DOMContentLoaded', function() {
                chrome.storage.local.get(["animeListings"], function (data) {
                  animeListings = data.animeListings;
                  sync();
+                 chrome.storage.local.get(["suggestionCache"], function (data) {
+                   suggestions = data.suggestionCache;
+                 });
                });
+
              } else {
-               animeListings = [];
-               sync();
+              animeListings = [];
+              sync();
+              suggestions = [];
+              getSuggestions();
                //$('#title').append('not cached');
              }
             });
@@ -476,8 +483,8 @@ function sync(){
 }
 
 function reloadAnime(){
-  $('#anime-info').html('<div id="anime-info-title">Anime</div>');
   var animeLength = anime.length;
+  $('#anime-entries').html('');
   if(animeLength > 0){
     for(var i = 0; i < animeLength; i++){
     //for(title of anime){
@@ -510,7 +517,7 @@ function reloadAnime(){
       }
 
 
-      $('#anime-info').append('<div data-index="'+ i +'" data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"> '+ displaytext +' <div class="icon change-label"><i class="fa fa-pencil-alt"></i></div><div class="icon remove-anime"><i class="fa fa-times"></i></div></div>');
+      $('#anime-entries').append('<div data-index="'+ i +'" data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"><div class="icon remove-anime"><i class="fa fa-times"></i></div><div class="icon change-label"><i class="fa fa-tag"></i></div><div class="icon change-nickname"><i class="fa fa-pencil-alt"></i></div>'+ displaytext +'</div>');
     }
   }
 }
@@ -543,9 +550,16 @@ function reloadStorageStats(){
 }
 
 function loadSuggestions(){
-  var suggestionsCount = 40;
+
   $('#anime-suggestions-options').html('');
-  suggestions = [];
+
+  $(suggestions).each(function(j, object){
+    $('#anime-suggestions-options').append('<div data-title="'+ object.attributes['canonicalTitle'] +'" data-imageurl="'+ object.attributes.posterImage['tiny'] +'" class="anime-suggestion"> '+ object.attributes['canonicalTitle'] +' </div>');
+  });
+  
+}
+
+function getSuggestions(){
   for (i = 0; i < suggestionsCount; i = i + 20){
     var results = getPopular(i);
     $(results.data).each(function(j, object){
@@ -556,11 +570,7 @@ function loadSuggestions(){
       }
     });
   };
-
-  $(suggestions).each(function(j, object){
-    $('#anime-suggestions-options').append('<div data-title="'+ object.attributes['canonicalTitle'] +'" data-imageurl="'+ object.attributes.posterImage['tiny'] +'" class="anime-suggestion"> '+ object.attributes['canonicalTitle'] +' </div>');
-  });
-  
+  chrome.storage.local.set({ suggestionCache: suggestions });
 }
 
 function setSettings(){

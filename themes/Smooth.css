@@ -1,7 +1,7 @@
 #wrapper {
 	background-color: #FFF;
-	width: 500px;
-	height: 500px;
+	min-width: 500px;
+	min-height: 500px;
 	padding: 10px;
 }
 
@@ -24,6 +24,26 @@ input {
 /*
 Main Page
 */
+
+#main {
+	max-height: 510px;
+	overflow:auto;
+}
+
+#main::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0);
+	background-color: #F5F5F5;
+}
+
+
+#main::-webkit-scrollbar {
+	width: 15px;
+	background-color: #F5F5F5;
+}
+
+#main::-webkit-scrollbar-thumb{
+	background-color: #000;
+}
 
 #main .info-title {
     font-weight: bold;
@@ -62,11 +82,50 @@ Main Page
 Anime Management
 */
 
+
 #anime-info #anime-info-title {
 	font-weight: bold;
-	padding: 5px 0 20px 0;
+	padding: 5px 0 10px 0;
 	font-size: 16pt;
 }
+
+#anime-info .anime-title {
+	padding: 2px 5px;
+}
+
+#anime-info #anime-entries {
+	max-height: 125px;
+	overflow: auto;
+}
+
+#anime-info #anime-entries .anime-title:nth-child(odd) {
+	background-color: #f1f1f1;
+}
+
+#anime-info #anime-entries .anime-title:nth-child(even) {
+	
+}
+
+#anime-info #anime-entries::-webkit-scrollbar-track, #anime-suggestions #anime-suggestions-options::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+
+
+#anime-info #anime-entries::-webkit-scrollbar, #anime-suggestions #anime-suggestions-options::-webkit-scrollbar {
+	width: 6px;
+	background-color: #F5F5F5;
+}
+
+#anime-info #anime-entries::-webkit-scrollbar-thumb, #anime-suggestions #anime-suggestions-options::-webkit-scrollbar-thumb{
+	background-color: #989898;
+}
+
+
+#anime-info .change-nickname, #anime-info .change-label, #anime-info .remove-anime{
+	float: right;
+}
+
 
 /*
 Anime Suggestions
@@ -78,10 +137,12 @@ Anime Suggestions
 	font-size:16pt;
 }
 
-#anime-suggestions #anime-suggestions-options{
-	max-height: 350px;
+#anime-suggestions #anime-suggestions-options {
+	max-height: 275px;
 	overflow: auto;
 }
+
+#anime-suggestions 
 
 /*
 Feed Management

@@ -2,15 +2,15 @@
     display: none; 
 }
 
-#anime-info{
+#anime-info {
 	display: none;
 }
 
-#feed-info{
+#feed-info {
 	display: none;
 }
 
-#settings{
+#settings {
 	display: none;
 }
 
@@ -25,53 +25,53 @@
 	display: none;
 }
 
-#controls{
+#controls {
 	display: none;
 }
 
-#anime-input, #feed-input{
+#anime-input, #feed-input {
 	display: none;
 }
 
-#title-bar{	
+#title-bar {	
 	display: flex;
 }
 
-#title{
+#title {
 	flex: 1 0 auto;
 }
 
-#functions{
+#functions {
 	flex: 0 0 auto;
 }
 
-.icon{
+.icon {
 	display: inline;
 	margin-left: 4px;
 
 }
 
-#content-bar{
+#content-bar {
 	position: relative;
 	word-wrap: break-word;
 }
 
-#main .info-link,#main .info-label{
+#main .info-link,#main .info-label {
 	white-space: nowrap;
 	padding:0 5px 0 15px;
     border: none;
 
 }
 
-#anime-suggestions{
+#anime-suggestions {
 	display: none;
 }
 
-.anime-suggestion{
+.anime-suggestion {
 	cursor: pointer;
 }
 
-.rq-form-element{
+.rq-form-element {
 	padding: 3px;
 }
 
