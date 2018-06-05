@@ -268,18 +268,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $(document).on('click', '.anime-suggestion', function () {
     var title = $(this).data('title');
+    var thumbUrl = $(this).data('imageurl');
     var nickname = prompt("Give "+ title +" a nickname? (Leave blank for no nickname)");
     if (nickname === null) {
       return;
     } else if (!nickname) {
       nickname = title;
     }
-    var selection = [nickname, title];
+    var selection = {nickname: nickname, title: title, thumbnailUrl: thumbUrl};
     anime.push(selection);
     reloadAnime();
     chrome.storage.sync.set({ animeList: anime });
     clearCache();
-    getDataUri($(this).data('imageurl'), function(dataUri) {
+    getDataUri(thumbUrl, function(dataUri) {
       if (thumbnails){
         thumbnails.push({title: title,data: dataUri});
       } else {
@@ -307,9 +308,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newLabel === null) {
       return;
     } else if (newLabel){
-      anime[index] = [nickname, title, newLabel];
+      anime[index].label = newLabel;
     } else {
-      anime[index] = [nickname, title];
+      anime[index].label = "";
     }
 
     reloadAnime();
@@ -413,8 +414,8 @@ function sync(){
         var objects = filterObjects(rssJson, getFilter(feed[0]));
       } 
       for(title of anime) {
-        var nicknameResults = getObjects(objects, 'title', title[0]);
-        var titleResults = getObjects(objects, 'title', title[1]);
+        var nicknameResults = getObjects(objects, 'title', title.nickname);
+        var titleResults = getObjects(objects, 'title', title.title);
         $(nicknameResults).each(function(i, object){
           if(animeListings){
             animeListings.push(object)
@@ -443,16 +444,16 @@ function sync(){
   chrome.storage.local.set({ animeListings: animeListings });
   if (animeListings.length > 0){
     for(title of anime) {
-      var results = getObjects(animeListings, 'title', title[0]);
+      var results = getObjects(animeListings, 'title', title.nickname);
       if (results.length == 0) {
-        results = getObjects(animeListings, 'title', title[1]);
+        results = getObjects(animeListings, 'title', title.title);
       }
       $(results).each(function(i, object){
         var imgString = '';
         if(thumbnails){
-          var thumb = getObjects(thumbnails, 'title', title[0]);
+          var thumb = getObjects(thumbnails, 'title', title.nickname);
           if (thumb.length == 0){
-            thumb = getObjects(thumbnails, 'title', title[1]);
+            thumb = getObjects(thumbnails, 'title', title.title);
           }
           if(thumb.length > 0){
             imgString = '<img class="anime-thumbnail" src="'+ thumb[0].data +'" />';
@@ -461,13 +462,13 @@ function sync(){
         var animeIdent = '';
   
         if (settings.labelAsTag) {
-            if (title.length > 2){
-            animeIdent = title[2];
+            if (title.label){
+            animeIdent = title.label;
           } else {
-            animeIdent = title[0];
+            animeIdent = title.nickname;
           }
         } else {
-          animeIdent = title[0];
+          animeIdent = title.nickname;
         }
   
         var defaultTag = "{0} (A)";
@@ -493,25 +494,25 @@ function reloadAnime(){
       var animeLabelRaw = '';
       var displaytext;
 
-      if(anime[i].length < 4){
-        var text = anime[i][0];
-        if(anime[i][0] != anime[i][1])
+      //if(anime[i].length < 4){
+        //var text = anime[i].nickname;
+        if(anime[i].nickname != anime[i].title)
         {
-          displaytext = anime[i][0] + " - " + anime[i][1]
+          displaytext = anime[i].nickname + " - " + anime[i].title
         } else {
-          displaytext = anime[i][1];
+          displaytext = anime[i].title;
         }
-        animeNickname = anime[i][0];
-        animeTitle = anime[i][1];
-      } else {
-        animeTitle = anime[i];
-        animeNickname = anime[i];
-        displayText = anime[i];
-      }
+        animeNickname = anime[i].nickname;
+        animeTitle = anime[i].title;
+      //} else {
+      //  animeTitle = anime[i].title;
+      //  animeNickname = anime[i].title;
+      //  displayText = anime[i].title;
+      //}
 
-      if (anime[i].length > 2)
+      if (anime[i].label)
       {
-        var animeLabel = anime[i][2];
+        var animeLabel = anime[i].label;
         animeLabelRaw = ' data-label="' + animeLabel + '"';
         displaytext = displaytext + ' - ' + animeLabel;
       }
