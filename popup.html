@@ -68,8 +68,28 @@
           </div>
           <div id="controls" class="content">
             <div class="cursor">
-              <input type="text" class="rq-form-element content" id="anime-input" />
-              <input type="text" class="rq-form-element content" id="feed-input" />
+              <div id="anime-controls" class="content">
+                <div class="anime-advanced-toggle collapsed" data-toggle="collapse" data-target="#anime-thumbnail-input">
+                  <i class="fa fa-fw fa-chevron-down"></i>
+                  <i class="fa fa-fw fa-chevron-right"></i>
+                </div>
+                Title
+                <input type="text" class="text-input rq-form-element" id="anime-title-input" />
+                Label
+                <input type="text" class="text-input rq-form-element" id="anime-label-input" />
+                <div class="panel-body">
+                  <div class="collapse" id="anime-advanced-options">
+                    Image Url
+                    <input type="text" class="text-input rq-form-element" id="anime-thumburl-input" />
+                  </div>
+                </div>
+              </div>
+              <div id="feed-controls" class="content">
+                Title
+                <input type="text" class="text-input rq-form-element" id="feed-title-input" />
+                Url
+                <input type="text" class="text-input rq-form-element" id="feed-url-input" />
+              </div>
             </div>
           </div>
           <div id="anime-suggestions" class="content">

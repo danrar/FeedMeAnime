@@ -29,7 +29,7 @@
 	display: none;
 }
 
-#anime-input, #feed-input {
+#anime-controls, #feed-controls {
 	display: none;
 }
 
@@ -98,4 +98,20 @@
 @keyframes blink {
 	from { opacity: 1; }
 	to { opacity: 0; }
+}
+
+#anime-advanced-options {
+	display: none;
+}
+
+.fa-chevron-right {
+  display: none;
+}
+
+.fa-chevron-down {
+  display: inline-block;
+}
+
+i.fa-chevron-down, i.fa-chevron-right {
+  cursor: pointer;
 }

@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
           $('#anime-info').show();
           $('#anime-suggestions').show();
           $('#controls').show();
-          $('#anime-input').show();
+          $('#anime-controls').show();
           $('#overlay').animate({ opacity: 0 }, 500, function(){
             $('#overlay').hide();
           });
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
           $('.content').hide();
           $('#feed-info').show();
           $('#controls').show();
-          $('#feed-input').show();
+          $('#feed-controls').show();
           $('#overlay').animate({ opacity: 0 }, 500, function(){
             $('#overlay').hide();
           });
