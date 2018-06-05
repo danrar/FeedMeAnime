@@ -6,7 +6,7 @@ var themes = {
 var animeListings = [];
 var anime = [];
 //anime [nickname, actual]
-var rss = [["Horrible Subs","http://horriblesubs.info/rss.php?res=1080"]];
+var rss = [{title: "Horrible Subs", url: "http://horriblesubs.info/rss.php?res=1080"}];
 //var suggestions = new Array()
 var suggestions = [];
 var suggestionsCount = 40;
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
   //})
 
   $(document).on('click', '.remove-anime', function () {
-    index = $(this).parent().data('index');
+    var index = $(this).parent().data('index');
     if (index > -1) {
       anime.splice(index, 1);
     }
@@ -183,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
   })
   
   $(document).on('click', '.remove-feed', function () {
-    rssFeed = getArrayInArray(rss, $(this).parent().data('feed-title'))
-    var index = rss.indexOf(rssFeed);
+    //rssFeed = getArrayInArray(rss, $(this).parent().data('feed-title'))
+    var index = $(this).parent().data('index');
     if (index > -1) {
       rss.splice(index, 1);
     }
@@ -408,10 +408,10 @@ function sync(){
   $('#main').html("");
   if(animeListings.length == 0 && rss.length > 0) {
     for(feed of rss) {
-      var rssJson = parseRSS(feed[1]);
+      var rssJson = parseRSS(feed.url);
       var objects = rssJson;
-      if(filters.hasOwnProperty(feed[0])) {
-        var objects = filterObjects(rssJson, getFilter(feed[0]));
+      if(filters.hasOwnProperty(feed.title)) {
+        var objects = filterObjects(rssJson, getFilter(feed.title));
       } 
       for(title of anime) {
         var nicknameResults = getObjects(objects, 'title', title.nickname);
@@ -526,8 +526,8 @@ function reloadAnime(){
 function reloadFeeds(){
   $('#feed-info').html('<div id="feed-info-title">Feeds</div>');
   if(rss.length > 0){
-    for(array of rss){
-      $('#feed-info').append('<div data-feed-title="'+ array[0] +'" data-feed-url="'+ array[1] +'" class="anime-title"> '+ array[0] +' - '+ array[1] +' <div class="icon remove-feed"><i class="fa fa-times"></i></div></div>');
+    for(var i =0; i < rss.length; i++){
+      $('#feed-info').append('<div data-index="'+ i +'" data-feed-title="'+ rss[i].title +'" data-feed-url="'+ rss[i].url +'" class="anime-title"> '+ rss[i].title +' - '+ rss[i].url +' <div class="icon remove-feed"><i class="fa fa-times"></i></div></div>');
     }
   }
 }
