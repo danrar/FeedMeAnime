@@ -17,8 +17,20 @@
 	color: #2e51a2
 }
 
+h3 {
+	margin: 6px 0;
+}
+
 input {
 	margin-top: 10px;
+}
+
+.text-input {
+	border: 0px;
+    background-color: #dcdcdc;
+    box-shadow: 2px 2px #f0f0f0;
+    width: 130px;
+    margin: 0 5px;
 }
 
 /*

@@ -172,6 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
   //  clearCache();
   //})
 
+  $(document).on('click', '.toggle', function () {
+    var target = $(this).data('target');
+    $(this).children('.fa-fw').toggle();
+    $(target).slideToggle();
+  })
+
   $(document).on('click', '.remove-anime', function () {
     var index = $(this).parent().data('index');
     if (index > -1) {
@@ -494,21 +500,14 @@ function reloadAnime(){
       var animeLabelRaw = '';
       var displaytext;
 
-      //if(anime[i].length < 4){
-        //var text = anime[i].nickname;
-        if(anime[i].nickname != anime[i].title)
-        {
-          displaytext = anime[i].nickname + " - " + anime[i].title
-        } else {
-          displaytext = anime[i].title;
-        }
-        animeNickname = anime[i].nickname;
-        animeTitle = anime[i].title;
-      //} else {
-      //  animeTitle = anime[i].title;
-      //  animeNickname = anime[i].title;
-      //  displayText = anime[i].title;
-      //}
+      if(anime[i].nickname != anime[i].title)
+      {
+        displaytext = anime[i].nickname + " - " + anime[i].title
+      } else {
+        displaytext = anime[i].title;
+      }
+      animeNickname = anime[i].nickname;
+      animeTitle = anime[i].title;
 
       if (anime[i].label)
       {

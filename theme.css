@@ -99,12 +99,15 @@
 	from { opacity: 1; }
 	to { opacity: 0; }
 }
+#anime-advanced-toggle {
+	float: right;
+}
 
 #anime-advanced-options {
 	display: none;
 }
 
-.fa-chevron-right {
+.fa-chevron-left {
   display: none;
 }
 
