@@ -138,6 +138,24 @@ Anime Management
 	float: right;
 }
 
+#anime-controls #anime-add-icons {
+	font-size: 1.6em;
+    float: right;
+    cursor: pointer;
+}
+
+#anime-controls .panel-body {
+	width: 500px;
+	height: 21px;
+}
+
+#anime-controls #anime-advanced-options{
+	padding: 10px 0;
+}
+
+#anime-controls #anime-advanced-options input{
+	width: 430px;
+}
 
 /*
 Anime Suggestions
@@ -150,11 +168,13 @@ Anime Suggestions
 }
 
 #anime-suggestions #anime-suggestions-options {
-	max-height: 275px;
+	max-height: 240px;
 	overflow: auto;
 }
 
-#anime-suggestions 
+#anime-suggestions {
+	clear: both;
+}
 
 /*
 Feed Management
