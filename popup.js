@@ -9,7 +9,8 @@ var anime = [];
 var rss = [{title: "Horrible Subs", url: "http://horriblesubs.info/rss.php?res=1080"}];
 //var suggestions = new Array()
 var suggestions = [];
-var suggestionsCount = 40;
+var suggestionsCount = 200;
+var suggestionsDisplay = 40;
 //var filters = [];
 var filters = {};
 var thumbnails = [];
@@ -21,12 +22,6 @@ var settings = {
   labelAsTag: false
 };
 
-
-
-
-
-//var anime = ["Overlord II", "Mahoutsukai no Yome"];
-//var rss = [["Horrible Subs","http://horriblesubs.info/rss.php?res=1080"], ["Nyaa.si","https://nyaa.si/?page=rss"]];
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.storage.sync.get(["cacheSettings"], function(cache) {
@@ -161,16 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
           });
        });
   });
-  
-  //$(document).on('click', '.remove-anime', function () {
-  //  var index = anime.indexOf($(this).parent().data('title'));
-  //  if (index > -1) {
-  //    anime.splice(index, 1);
-  //  }
-  //  chrome.storage.sync.set({ animeList: anime });
-  //  reloadAnime();
-  //  clearCache();
-  //})
 
   $(document).on('click', '.toggle', function () {
     var target = $(this).data('target');
@@ -189,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
   })
   
   $(document).on('click', '.remove-feed', function () {
-    //rssFeed = getArrayInArray(rss, $(this).parent().data('feed-title'))
     var index = $(this).parent().data('index');
     if (index > -1) {
       rss.splice(index, 1);
@@ -214,13 +198,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
       } 
     });
-
     settings.labelAsTag = $('#label-tag-checkbox').prop('checked');
-
     chrome.storage.sync.set({ filters: filters });
-
     chrome.storage.sync.set({ cacheSettings: settings });
-
     location.reload();
   })
 
@@ -239,17 +219,43 @@ document.addEventListener('DOMContentLoaded', function() {
   $(document).on('click', '#clear-cache', function () {
     clearCache();
   });
-
-  //$('#anime-input').keypress(function (e) {
-  //  if (e.which == 13) {
-  //    anime.push($('#anime-input').val());
-  //    reloadAnime();
-  //    chrome.storage.sync.set({ animeList: anime });
-  //    clearCache();
-  //    return false;
-  //  }
-  //});
   
+ $(document).on('click', '#anime-add-icons', function () {
+    var title = $('#anime-title-input').val();
+    var nickname = $('#anime-nickname-input').val();
+    var label = $('#anime-label-input').val();
+    var thumbnailUrl = $('#anime-thumburl-input').val();
+    if (!title) {
+      var error = $('#error-message');
+      error.html('Please enter an Anime title to track.').dialog({appendTo: "#error-wrapper", dialogClass: 'error-position'});
+      return;
+    }
+
+    if(!nickname){
+      nickname = title;
+    }
+
+    if(!thumbnailUrl){
+      var matchingAnime = suggestions.filter(suggestion => suggestion.attributes['canonicalTitle'] == title);
+      if(matchingAnime.length > 0){
+        addThumbnail(matchingAnime[0].attributes['canonicalTitle'], matchingAnime[0].attributes.posterImage['tiny']);
+      }
+    } else {
+      addThumbnail(title, thumbnailUrl);
+    }
+
+    var selection = {nickname: nickname, title: title, label: label, thumbnailUrl: thumbnailUrl};
+
+    anime.push(selection);
+    reloadAnime();
+    chrome.storage.sync.set({ animeList: anime });
+    clearCache();
+    $('#anime-title-input').val('');
+    $('#anime-nickname-input').val('');
+    $('#anime-label-input').val('');
+    $('#anime-thumburl-input').val('');
+  });
+
   $('#anime-input').keypress(function (e) {
     if (e.which == 13) {
       var array = $('#anime-input').val().split(' - ');
@@ -322,15 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
     reloadAnime();
     chrome.storage.sync.set({ animeList: anime });
     clearCache();
-    getDataUri($(this).data('imageurl'), function(dataUri) {
-      if (thumbnails){
-        thumbnails.push({title: nickname,data: dataUri});
-      } else {
-        thumbnails = [{title: title,data: dataUri}];
-      }
-
-      chrome.storage.local.set({thumbnailCache: thumbnails})
-    });
+    addThumbnail(title, $(this).data('imageurl'));
   });
   
 
@@ -480,7 +478,7 @@ function sync(){
         var defaultTag = "{0} (A)";
         var tagText = defaultTag.format(animeIdent);
   
-        $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ tagText +'"><div class="icon clipboard-title-copy"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy"><i class="fa fa-copy"></i></div></div></div>');
+        $('#main').append('<div class="anime-block">'+ imgString +'<div data-title="'+ object['title'] +'" data-link="'+ object['link'] +'" class="result"> <div class="info-title">'+ object['title'] +'</div> <div class="anime-outputs"> <input type="text" class="info-label" value="'+ tagText +'"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div></div> <input type="text" class="info-link" value="'+ object['link'] +'"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div></div></div>');
       });
     }
   } else {
@@ -517,7 +515,7 @@ function reloadAnime(){
       }
 
 
-      $('#anime-entries').append('<div data-index="'+ i +'" data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"><div class="icon remove-anime"><i class="fa fa-times"></i></div><div class="icon change-label"><i class="fa fa-tag"></i></div><div class="icon change-nickname"><i class="fa fa-pencil-alt"></i></div>'+ displaytext +'</div>');
+      $('#anime-entries').append('<div data-index="'+ i +'" data-nickname="'+ animeNickname +'" data-title="'+ animeTitle +'"'+ animeLabelRaw +' class="anime-title"><div class="icon remove-anime" title="Delete"><i class="fa fa-times"></i></div><div class="icon change-label" title="Change Label"><i class="fa fa-tag"></i></div><div class="icon change-nickname" title="Change Nickname"><i class="fa fa-pencil-alt"></i></div>'+ displaytext +'</div>');
     }
   }
 }
@@ -552,11 +550,15 @@ function reloadStorageStats(){
 function loadSuggestions(){
 
   $('#anime-suggestions-options').html('');
-
+  //Rethink later
+  var i = 0;
   $(suggestions).each(function(j, object){
-    $('#anime-suggestions-options').append('<div data-title="'+ object.attributes['canonicalTitle'] +'" data-imageurl="'+ object.attributes.posterImage['tiny'] +'" class="anime-suggestion"> '+ object.attributes['canonicalTitle'] +' </div>');
+    if (i < suggestionsDisplay) {
+      $('#anime-suggestions-options').append('<div data-title="'+ object.attributes['canonicalTitle'] +'" data-imageurl="'+ object.attributes.posterImage['tiny'] +'" class="anime-suggestion"> '+ object.attributes['canonicalTitle'] +' </div>');
+    }
+    i++;
   });
-  
+  $('#anime-title-input').autocomplete({ source: suggestions.map(suggestion => suggestion.attributes['canonicalTitle']), minLength: 2});
 }
 
 function getSuggestions(){
@@ -602,6 +604,18 @@ function getArrayInArray(array, item) {
         }
     }
     return null;
+}
+
+function addThumbnail (title, imageUrl) {
+  getDataUri(imageUrl, function(dataUri) {
+    if (thumbnails){
+      thumbnails.push({title: title,data: dataUri});
+    } else {
+      thumbnails = [{title: title,data: dataUri}];
+    }
+
+    chrome.storage.local.set({thumbnailCache: thumbnails})
+  });
 }
 
 function addFilter(key, value) {
@@ -660,7 +674,11 @@ function getDataUri(url, callback) {
       canvas.height = this.naturalHeight;
       canvas.getContext('2d').drawImage(this, 0, 0);
       // ... or get as Data URI
-      callback(canvas.toDataURL('image/png'));
+      if(url.includes('png')) {
+        callback(canvas.toDataURL('image/png'));
+      } else if (url.includes('jpeg') || url.includes('jpg')) {
+        callback(canvas.toDataURL('image/jpg'));
+      }
   };
 }
 

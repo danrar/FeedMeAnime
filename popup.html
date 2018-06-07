@@ -4,6 +4,7 @@
     <title>Feed Me Anime</title>
     <link rel="stylesheet" href="theme.css">
     <script src="thirdParty/jquery-3.3.1.min.js"></script>
+    <script src="thirdParty/jquery-ui/jquery-ui.js"></script>
     <script src="thirdParty/xml2json.js"></script>
     <script src="thirdParty/fajs/js/fontawesome-all.min.js"></script>
     <script src="popup.js"></script>
@@ -16,10 +17,10 @@
   				Feed Me Anime
   			</div>
   			<div id="functions">
-  				<div class="icon active-tab" id="sync"><i class="fa fa-list-alt"></i></div>
-   				<div class="icon" id="add-anime"><i class="fa fa-plus-circle"></i></div>
-          <div class="icon" id="add-feed"><i class="fa fa-cloud-download-alt"></i></div>
-          <div class="icon" id="change-settings"><i class="fa fa-wrench"></i></div>
+  				<div class="icon active-tab" id="sync" title="Main List"><i class="fa fa-list-alt"></i></div>
+   				<div class="icon" id="add-anime" title="Tracked Anime"><i class="fa fa-plus-circle"></i></div>
+          <div class="icon" id="add-feed" title="Feeds"><i class="fa fa-cloud-download-alt"></i></div>
+          <div class="icon" id="change-settings" title="Settings"><i class="fa fa-wrench"></i></div>
   			</div>
   		</div>
   		<div id="content-bar">
@@ -70,21 +71,21 @@
             <div class="cursor">
               <div id="anime-controls" class="content">
                 <h3>Add</h3>
-                <div id="anime-advanced-toggle" class="toggle" data-toggle="collapse" data-target="#anime-advanced-options">
+                <div id="anime-advanced-toggle" class="toggle" data-toggle="collapse" data-target="#anime-advanced-options"  title="Advanced Settings">
                   <i class="fa fa-fw fa-chevron-down"></i>
                   <i class="fa fa-fw fa-chevron-left"></i>
                 </div>
                 <input type="text" class="text-input rq-form-element" id="anime-title-input" placeholder="Title" />
-                <input type="text" class="text-input rq-form-element" id="anime-nickname-input" placeholder="Nickname" />
                 <input type="text" class="text-input rq-form-element" id="anime-label-input" placeholder="Label" />
                 <div class="panel-body">
                   <div class="collapse" id="anime-advanced-options">
+                    <input type="text" class="text-input rq-form-element" id="anime-nickname-input" placeholder="Nickname" />
                     <input type="text" class="text-input rq-form-element" id="anime-thumburl-input" placeholder="Thumbnail Url" />
                   </div>
                 </div>
-                <div id="anime-add-icons">
+                <div id="anime-add-icons" title="Add Anime">
                   <i class="far fa-list-alt" data-fa-transform="grow-4"></i>
-                  <i class="fas fa-plus" data-fa-transform="shrink-6 left-1"></i>
+                  <i class="fas fa-plus" data-fa-transform="shrink-6"></i>
                 </div>
               </div>
               <div id="feed-controls" class="content">
@@ -102,6 +103,10 @@
           </div>
   		</div>
   		<div id="footer">
+        <div id="error-wrapper">
+          <div id="error-message" title="Error">
+          </div>
+        </div>
   		</div>
   	</div>
   </body>

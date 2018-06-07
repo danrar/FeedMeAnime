@@ -99,6 +99,7 @@
 	from { opacity: 1; }
 	to { opacity: 0; }
 }
+
 #anime-advanced-toggle {
 	float: right;
 }
@@ -118,3 +119,4 @@
 i.fa-chevron-down, i.fa-chevron-right {
   cursor: pointer;
 }
+

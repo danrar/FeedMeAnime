@@ -6,7 +6,7 @@
   "version": "1.03",
   "background":
     {
-        "scripts": ["thirdParty/jquery-3.3.1.min.js", "thirdParty/xml2json.js", "popup.js"],
+        "scripts": ["thirdParty/jquery-3.3.1.min.js", "thirdParty/xml2json.js", "popup.js", "thirdParty/jquery-ui/jquery-ui.js"],
         "css": ["theme.css"]
     },
   "browser_action": {
