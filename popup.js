@@ -256,17 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#anime-thumburl-input').val('');
   });
 
-  $('#anime-input').keypress(function (e) {
-    if (e.which == 13) {
-      var array = $('#anime-input').val().split(' - ');
-      anime.push(array);
-      reloadAnime();
-      chrome.storage.sync.set({ animeList: anime });
-      clearCache();
-      return false;
-    }
-  });
-
   $('#feed-input').keypress(function (e) {
     if (e.which == 13) {
       var array = $('#feed-input').val().split(' - ');
@@ -377,19 +366,25 @@ function clearStorage(){
 }
 
 function parseRSS(rssUrl){
-  var json = "";
+    var json = "";
     $.ajax({
         url: rssUrl,
         type: 'GET',
         cache: false,
         async: false,
         dataType: "xml"
-  }).done(function(data) {
-    json = $.xml2json(data);
-  }).fail(function(e) {
-    alert( e.message );
-  });
-  return json;
+    }).done(function(data) {
+      try{
+        json = $.xml2json(data);
+      } catch(err) {
+        pushNotification('No response from ' + feed.title);
+        return null;
+      }    
+    }).fail(function(e) {
+      pushNotification('No response from ' + feed.title);
+      return null;
+    });
+    return json;
 }
 
 function getPopular(offset){
@@ -413,30 +408,33 @@ function sync(){
   if(animeListings.length == 0 && rss.length > 0) {
     for(feed of rss) {
       var rssJson = parseRSS(feed.url);
-      var objects = rssJson;
-      if(filters.hasOwnProperty(feed.title)) {
-        var objects = filterObjects(rssJson, getFilter(feed.title));
-      } 
-      for(title of anime) {
-        var nicknameResults = getObjects(objects, 'title', title.nickname);
-        var titleResults = getObjects(objects, 'title', title.title);
-        $(nicknameResults).each(function(i, object){
-          if(animeListings){
-            animeListings.push(object)
-          } else {
-            animeListings = [object];
-          }
-        });
 
-        $(titleResults).each(function(i, object){
-          if(!animeListings.includes(object)) {
+      if(rssJson != null) {
+        var objects = rssJson;
+        if(filters.hasOwnProperty(feed.title)) {
+          var objects = filterObjects(rssJson, getFilter(feed.title));
+        } 
+        for(title of anime) {
+          var nicknameResults = getObjects(objects, 'title', title.nickname);
+          var titleResults = getObjects(objects, 'title', title.title);
+          $(nicknameResults).each(function(i, object){
             if(animeListings){
               animeListings.push(object)
             } else {
               animeListings = [object];
             }
-          }
-        });
+          });
+
+          $(titleResults).each(function(i, object){
+            if(!animeListings.includes(object)) {
+              if(animeListings){
+                animeListings.push(object)
+              } else {
+                animeListings = [object];
+              }
+            }
+          });
+        }
       }
     }
 
@@ -619,18 +617,24 @@ function addThumbnail (title, imageUrl) {
 }
 
 function addFilter(key, value) {
-    filters[key] = value;
+  filters[key] = value;
 }
 
 function removeFilter(key) {
-    delete filters[key];
+  delete filters[key];
 }
 
 function getFilter(key) {
-    return filters[key];
+  return filters[key];
 }
 
-function filterObjects(obj, filterString){
+function pushNotification(message) {
+  var note = $('<div class="notification">' + message + ' <div class="icon notification-close"><i class="fa fa-times"></i></div></div>');
+  $('#notifications').append(note);
+  note.animate({'top': "-16px"}).delay(10000).fadeOut(300);
+}
+
+function filterObjects(obj, filterString) {
   var objects = [];
   if(filterString){
     var filters = filterString.split(';');

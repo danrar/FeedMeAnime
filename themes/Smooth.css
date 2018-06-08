@@ -188,6 +188,12 @@ Feed Management
 	font-size: 16pt;
 }
 
+#feed-controls #feed-add-icons {
+	font-size: 1.6em;
+    float: right;
+    cursor: pointer;
+}
+
 /*
 Settings
 */
