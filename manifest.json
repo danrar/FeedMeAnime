@@ -1,22 +1,22 @@
 {
   "manifest_version": 2,
-
   "name": "Feed Me Anime",
   "description": "RSS Feed to Magnet Link Parser",
   "version": "1.03",
-  "background":
-    {
-        "scripts": ["thirdParty/jquery-3.3.1.min.js", "thirdParty/xml2json.js", "popup.js", "thirdParty/jquery-ui/jquery-ui.js"],
-        "css": ["theme.css"]
-    },
+  "background": {
+    "scripts": [
+      "popup.bundle.js",
+      "popup-scripts.bundle.js"
+    ]
+  },
   "browser_action": {
-   "default_icon": "icon.png",
-   "default_popup": "popup.html"
+    "default_icon": "content/imgs/icon.png",
+    "default_popup": "index.html"
   },
   "permissions": [
     "http://*/*",
     "https://*/*",
     "storage"
-  ]
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
-

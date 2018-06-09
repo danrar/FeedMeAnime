@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Hello, world!</title>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="title-bar">
+      <div id="title">
+        Feed Me Anime
+      </div>
+      <div id="functions">
+        <div class="icon active-tab" id="sync" title="Main List">
+          <i class="fa fa-list-alt"></i>
+        </div>
+        <div class="icon" id="add-anime" title="Tracked Anime">
+          <i class="fa fa-plus-circle"></i>
+        </div>
+        <div class="icon" id="add-feed" title="Feeds">
+          <i class="fa fa-cloud-download-alt"></i>
+        </div>
+        <div class="icon" id="change-settings" title="Settings">
+          <i class="fa fa-wrench"></i>
+        </div>
+      </div>
+    </div>
+    <div id="content-bar">
+      <div id="overlay"></div>
+      <div id="main" class="content"></div>
+      <div id="anime-info" class="content">
+        <div id="anime-info-title">Anime</div>
+        <div id="anime-entries"></div>
+      </div>
+      <div id="feed-info" class="content"></div>
+      <div id="settings" class="content">
+        <div id="settings-title">Settings</div>
+        <div class="setting-option">
+          <span>Theme</span>
+          <select id="themes-select"></select>
+        </div>
+        <div class="setting-option">
+          <span>Use label for Tag text </span>
+          <input type="checkbox" id="label-tag-checkbox" />
+        </div>
+        <div class="setting-option">
+          <span>Filters</span>
+          <div id="filter-configuration"></div>
+        </div>
+        <div class="storage-stats">
+          <div class="setting-option">
+            <span>Sync'd Storage</span>
+            <div id="storage-sync-text"></div>
+          </div>
+          <div class="setting-option">
+            <span>Local Storage</span>
+            <div id="storage-local-text"></div>
+          </div>
+        </div>
+
+        <div class="setting-option">
+          <span>Clear Storage</span>
+          <div class="icon" id="clear-storage">
+            <i class="fa fa-eraser"></i>
+          </div>
+        </div>
+        <div class="icon" id="save-settings">
+          <i class="fa fa-save"></i>
+        </div>
+      </div>
+
+      <div id="controls" class="content">
+        <div class="cursor">
+          <div id="anime-controls" class="content">
+            <h3>Add</h3>
+            <div id="anime-advanced-toggle" class="toggle" data-toggle="collapse" data-target="#anime-advanced-options" title="Advanced Settings">
+              <i class="fa fa-fw fa-chevron-down"></i>
+              <i class="fa fa-fw fa-chevron-left"></i>
+            </div>
+            <input type="text" class="text-input rq-form-element" id="anime-title-input" placeholder="Title" />
+            <input type="text" class="text-input rq-form-element" id="anime-label-input" placeholder="Label" />
+
+            <div class="panel-body">
+              <div class="collapse" id="anime-advanced-options">
+                <input type="text" class="text-input rq-form-element" id="anime-nickname-input" placeholder="Nickname" />
+                <input type="text" class="text-input rq-form-element" id="anime-thumburl-input" placeholder="Thumbnail Url" />
+              </div>
+            </div>
+
+            <div id="anime-add-icons" title="Add Anime">
+              <i class="far fa-list-alt" data-fa-transform="grow-4"></i>
+              <i class="fa fa-plus" data-fa-transform="shrink-6"></i>
+            </div>
+          </div>
+
+          <div id="feed-controls" class="content">
+            <input type="text" class="text-input rq-form-element" id="feed-title-input" placeholder="Title" />
+            <input type="text" class="text-input rq-form-element" id="feed-url-input" placeholder="Url" />
+            <div id="feed-add-icons" class="fa-4x" title="Add Feed">
+              <span class="fa-layers fa-fw">
+                <i class="fa fa-cloud"></i>
+                <i class="fa-inverse fa fa-plus" data-fa-transform="shrink-8"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="anime-suggestions" class="content">
+        <div id="anime-suggestions-title">Suggestions</div>
+        <div id="anime-suggestions-options"></div>
+      </div>
+    </div>
+
+    <div id="footer">
+      <div id="error-wrapper">
+        <div id="error-message" title="Error"></div>
+      </div>
+      <div id="notification-wrapper">
+        <div id="notifications"></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
