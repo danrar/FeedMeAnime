@@ -234,7 +234,16 @@ FeedMeAnime.sync = async function () {
 
             let defaultTag = "{0} (A)";
             let tagText = defaultTag.format(animeIdent);
-            $("#main").append(`<div class="anime-block">${imgString}<div data-title="${val["title"]}" data-link="${val["link"]}" class="result"><div class="info-title">${val["title"]}</div><div class="anime-outputs"><input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div></div><input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy></i></div></div></div>`);
+            $("#main").append(`<div class="anime-block">
+                                    ${imgString}
+                                    <div data-title="${val["title"]}" data-link="${val["link"]}" class="result">
+                                        <div class="info-title">${val["title"]}</div>
+                                        <div class="anime-outputs">
+                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                            <input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                        </div>
+                                    </div>
+                                </div>`);
         });
     }
 }
