@@ -100,11 +100,11 @@
 	to { opacity: 0; }
 }
 
-#anime-advanced-toggle {
+#anime-advanced-toggle, #feed-advanced-toggle {
 	float: right;
 }
 
-#anime-advanced-options {
+#anime-advanced-options, #feed-advanced-options {
 	display: none;
 }
 

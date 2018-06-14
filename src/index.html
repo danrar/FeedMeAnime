@@ -97,14 +97,25 @@
           </div>
 
           <div id="feed-controls" class="content">
-            <input type="text" class="text-input rq-form-element" id="feed-title-input" placeholder="Title" />
-            <input type="text" class="text-input rq-form-element" id="feed-url-input" placeholder="Url" />
-            <div id="feed-add-icons" class="fa-4x" title="Add Feed">
-              <span class="fa-layers fa-fw">
-                <i class="fa fa-cloud"></i>
-                <i class="fa-inverse fa fa-plus" data-fa-transform="shrink-8"></i>
-              </span>
-            </div>
+            <h3>Add</h3>
+              <div id="feed-advanced-toggle" class="toggle" data-toggle="collapse" data-target="#feed-advanced-options"  title="Advanced Settings">
+                <i class="fa fa-fw fa-chevron-down"></i>
+                <i class="fa fa-fw fa-chevron-left"></i>
+              </div>
+              <input type="text" class="text-input rq-form-element" id="feed-title-input" placeholder="Title" />
+              <input type="text" class="text-input rq-form-element" id="feed-url-input" placeholder="Url" />
+              <div class="panel-body">
+                <div class="collapse" id="feed-advanced-options">
+                  <input type="text" class="text-input rq-form-element" id="feed-titleField-input" placeholder="Title Field" />
+                  <input type="text" class="text-input rq-form-element" id="feed-linkField-input" placeholder="Link Field" />
+                </div>
+              </div>
+              <div id="feed-add-icons" class="fa-4x" title="Add Feed">
+                <span class="fa-layers fa-fw">
+                  <i class="fas fa-cloud"></i>
+                  <i class="fa-inverse fas fa-plus" data-fa-transform="shrink-8"></i>
+                </span>
+              </div>
           </div>
         </div>
       </div>

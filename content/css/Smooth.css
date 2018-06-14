@@ -194,6 +194,20 @@ Feed Management
     cursor: pointer;
 }
 
+#feed-controls #feed-advanced-toggle {
+	font-size: 1.2em;
+	padding: 1px 3px 0 0;
+}
+
+#feed-controls .panel-body {
+	width: 500px;
+	height: 21px;
+}
+
+#feed-controls #feed-advanced-options{
+	padding: 10px 0;
+}
+
 /*
 Settings
 */

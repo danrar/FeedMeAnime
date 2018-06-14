@@ -27,6 +27,7 @@ const pageState = {
         title: "Horrible Subs",
         url: "http://horriblesubs.info/rss.php?res=1080"
     }],
+    rssContent: [],
     suggestions: {
         count: 200,
         display: 40,
@@ -161,38 +162,45 @@ FeedMeAnime.getRss = async function (feed) {
 FeedMeAnime.sync = async function () {
     $("#main").html("");
     if (pageState.animeListings.length == 0 && pageState.rssFeeds.length > 0) {
-        for (let feed of pageState.rssFeeds) {
-            const rss = await this.getRss(feed);
-            if (rss != null) {
-                let objects = rss.items;
-                if (_.has(pageState.filters, feed.title)) {
-                    objects = this.getObjects(rss.items, _.get(pageState.filters, feed.title));
-                }
-
-                for (let title of pageState.anime) {
-                    let nicknameResults = this.getObjects(objects, "title", title.nickname);
-                    let titleResults = this.getObjects(objects, "title", title.title);
-
-                    _.forEach(nicknameResults, (val) => {
-                        if (pageState.animeListings) {
-                            pageState.animeListings.push(val);
-                        } else {
-                            pageState.animeListings = [val];
-                        }
-                    });
-
-                    _.forEach(titleResults, (val) => {
-                        if (!pageState.animeListings.includes(val)) {
-                            if (pageState.animeListings) {
-                                pageState.animeListings.push(val);
-                            } else {
-                                pageState.animeListings = [val];
-                            }
-                        }
-                    })
-                }
+        for (var i = 0; i < pageState.rssFeeds.length; i++) {
+          const rss = await this.getRss(pageState.rssFeeds[i]);
+          if (rss != null) {
+            var objects = rss.items;
+      
+            if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
+                objects = this.getObjects(rss.items, _.get(pageState.filters, pageState.rssFeeds[i].title));
             }
+
+            if(pageState.rssContents) {
+              if(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1){
+                pageState.rssContents.push({title: pageState.rssFeeds[i].title, contents: objects});
+              }
+            } else {
+              pageState.rssContents = [{title: pageState.rssFeeds[i].title, contents: objects}];
+            }
+          }
         }
+
+        for(var i = 0; i < pageState.rssFeeds.length; i++) {
+          var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0]);
+          for(var j = 0; j < pageState.anime.length; j++) {
+            var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, pageState.rssFeeds[i].titleField, pageState.anime[j].nickname);
+            var titleResults = this.getObjects(pageState.rssContents[contenti].contents, pageState.rssFeeds[i].titleField, pageState.anime[j].title);
+
+             for(var k = 0; k < nicknameResults.length; k++) {
+              if(pageState.animeListings) {
+                pageState.animeListings.push({title: nicknameResults[k][pageState.rssFeeds[i].titleField], link: nicknameResults[k][pageState.rssFeeds[i].linkField]})
+              }
+            }
+
+            for(var l = 0; l < titleResults.length; l++) {
+              if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
+                pageState.animeListings.push({title: titleResults[l][pageState.rssFeeds[i].titleField], link: titleResults[l][pageState.rssFeeds[i].linkField]})
+              }
+            }
+          }
+        }
+    
 
         let cacheTime = new Date().getTime();
         let cacheTimeString = {
@@ -204,7 +212,7 @@ FeedMeAnime.sync = async function () {
     await this.storage.local.setItem("animeListings", pageState.animeListings);
 
     if (pageState.animeListings.length === 0) {
-        $("#main").append('<div class="no-anime-text">No anime you are following are present in your RSS feeds currently.</div>');
+        $("#main").append(`<div class="no-anime-text">No anime you are following are present in your RSS feeds currently.</div>`);
         return;
     }
 
@@ -674,16 +682,51 @@ $(document).on('click', '#anime-add-icons', async function () {
     $('#anime-thumburl-input').val('');
 });
 
-$('#feed-input').keypress(async function (e) {
-    if (e.which == 13) {
-        var array = $('#feed-input').val().split(' - ');
-        pageState.rssFeeds.push(array);
-        await FMA.reloadFeeds();
-        await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
-        await FMA.clearCache();
-        return false;
+$(document).on('click', '#feed-add-icons', async function () {
+    var title = $('#feed-title-input').val();
+    var url = $('#feed-url-input').val();
+    var titleField = $('#feed-titleField-input').val();
+    var linkField = $('#feed-linkField-input').val();
+
+    if (!title || !url) {
+      var error = $('#error-message');
+      error.html('Every feed needs both a title and a url to it\'s contents').dialog({appendTo: "#error-wrapper", dialogClass: 'error-position'});
+      return;
     }
-});
+
+    if(!titleField) {
+      titleField = 'title';
+    }
+
+    if(!linkField) {
+      linkField = 'link';
+    }
+
+
+    pageState.rss.push({title: title, url: url, titleField: titleField, linkField: linkField});
+
+    await FMA.reloadFeeds();
+    await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+    await FMA.clearCache();
+
+    $('#feed-title-input').val('');
+    $('#feed-url-input').val('');
+    $('#feed-titleField-input').val('');
+    $('#feed-linkField-input').val('');
+
+  });
+
+
+// $('#feed-input').keypress(async function (e) {
+//     if (e.which == 13) {
+//         var array = $('#feed-input').val().split(' - ');
+//         pageState.rssFeeds.push(array);
+//         await FMA.reloadFeeds();
+//         await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+//         await FMA.clearCache();
+//         return false;
+//     }
+// });
 
 $(document).on('click', '.anime-suggestion', async function () {
     var title = $(this).data('title');
