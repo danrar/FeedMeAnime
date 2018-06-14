@@ -154,7 +154,7 @@ FeedMeAnime.getRss = async function (feed) {
 
         return res;
     } catch {
-        this.pushNotification(`No response from ${feed.title}`);
+        this.pushNotification("No response from " + feed.title);
         return null;
     }
 }
