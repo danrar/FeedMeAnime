@@ -25,9 +25,11 @@ const pageState = {
     anime: [],
     rssFeeds: [{
         title: "Horrible Subs",
-        url: "http://horriblesubs.info/rss.php?res=1080"
+        url: "http://horriblesubs.info/rss.php?res=1080", 
+        titleField: 'title', 
+        linkField: 'link'
     }],
-    rssContent: [],
+    rssContents: [],
     suggestions: {
         count: 200,
         display: 40,
@@ -103,6 +105,9 @@ FeedMeAnime.initialize = async function () {
     const animeCache = await this.storage.sync.getItem("animeList");
     if (animeCache != null) {
         pageState.anime = animeCache;
+        for (let title in pageState.anime) {
+            this.addThumbnail(title.title, title.thumbnailUrl);
+          }
     }
 
     // Load the rssFeeds
@@ -188,9 +193,7 @@ FeedMeAnime.sync = async function () {
             var titleResults = this.getObjects(pageState.rssContents[contenti].contents, pageState.rssFeeds[i].titleField, pageState.anime[j].title);
 
              for(var k = 0; k < nicknameResults.length; k++) {
-              if(pageState.animeListings) {
                 pageState.animeListings.push({title: nicknameResults[k][pageState.rssFeeds[i].titleField], link: nicknameResults[k][pageState.rssFeeds[i].linkField]})
-              }
             }
 
             for(var l = 0; l < titleResults.length; l++) {
@@ -468,23 +471,25 @@ FeedMeAnime.getSuggestions = async function () {
 
 FeedMeAnime.addThumbnail = async function (title, imageUrl) {
     let self = this;
-    await this.getDataUri(imageUrl, async function (dataUri) {
-        if (pageState.thumbnails) {
-            pageState.thumbnails.push({
-                title: title,
-                data: dataUri
-            });
-        } else {
-            pageState.thumbnails = [
-                {
+    if (self.getObjects(pageState.thumbnails, 'title', title).length < 1){
+        await self.getDataUri(imageUrl, async function (dataUri) {
+            if (pageState.thumbnails) {
+                pageState.thumbnails.push({
                     title: title,
                     data: dataUri
-                }
-            ]
-        }
+                });
+            } else {
+                pageState.thumbnails = [
+                    {
+                        title: title,
+                        data: dataUri
+                    }
+                ]
+            }
 
-        await self.storage.local.setItem("thumbnailCache", pageState.thumbnails);
-    });
+            await self.storage.local.setItem("thumbnailCache", pageState.thumbnails);
+        });
+    }
 }
 
 FeedMeAnime.getDataUri = function (url, callback) {
@@ -703,7 +708,7 @@ $(document).on('click', '#feed-add-icons', async function () {
     }
 
 
-    pageState.rss.push({title: title, url: url, titleField: titleField, linkField: linkField});
+    pageState.rssFeeds.push({title: title, url: url, titleField: titleField, linkField: linkField});
 
     await FMA.reloadFeeds();
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
@@ -715,18 +720,6 @@ $(document).on('click', '#feed-add-icons', async function () {
     $('#feed-linkField-input').val('');
 
   });
-
-
-// $('#feed-input').keypress(async function (e) {
-//     if (e.which == 13) {
-//         var array = $('#feed-input').val().split(' - ');
-//         pageState.rssFeeds.push(array);
-//         await FMA.reloadFeeds();
-//         await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
-//         await FMA.clearCache();
-//         return false;
-//     }
-// });
 
 $(document).on('click', '.anime-suggestion', async function () {
     var title = $(this).data('title');
