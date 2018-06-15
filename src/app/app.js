@@ -156,7 +156,7 @@ FeedMeAnime.getRss = async function (feed) {
             cache: false,
             dataType: "json"
         });
-
+        //console.log(res);
         return res;
     } catch {
         this.pushNotification("No response from " + feed.title);
@@ -167,38 +167,23 @@ FeedMeAnime.getRss = async function (feed) {
 FeedMeAnime.sync = async function () {
     $("#main").html("");
     if (pageState.animeListings.length == 0 && pageState.rssFeeds.length > 0) {
-        for (var i = 0; i < pageState.rssFeeds.length; i++) {
-          const rss = await this.getRss(pageState.rssFeeds[i]);
-          if (rss != null) {
-            var objects = rss.items;
-      
-            if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
-                objects = this.getObjects(rss.items, _.get(pageState.filters, pageState.rssFeeds[i].title));
-            }
 
-            if(pageState.rssContents) {
-              if(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1){
-                pageState.rssContents.push({title: pageState.rssFeeds[i].title, contents: objects});
-              }
-            } else {
-              pageState.rssContents = [{title: pageState.rssFeeds[i].title, contents: objects}];
-            }
-          }
-        }
+        await this.updateFeedContents();
 
         for(var i = 0; i < pageState.rssFeeds.length; i++) {
-          var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0]);
+          var feed = pageState.rssFeeds[i];
+          var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', feed.title)[0]);
           for(var j = 0; j < pageState.anime.length; j++) {
-            var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, pageState.rssFeeds[i].titleField, pageState.anime[j].nickname);
-            var titleResults = this.getObjects(pageState.rssContents[contenti].contents, pageState.rssFeeds[i].titleField, pageState.anime[j].title);
+            var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
+            var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
 
              for(var k = 0; k < nicknameResults.length; k++) {
-                pageState.animeListings.push({title: nicknameResults[k][pageState.rssFeeds[i].titleField], link: nicknameResults[k][pageState.rssFeeds[i].linkField]})
+                pageState.animeListings.push({title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField]})
             }
 
             for(var l = 0; l < titleResults.length; l++) {
               if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
-                pageState.animeListings.push({title: titleResults[l][pageState.rssFeeds[i].titleField], link: titleResults[l][pageState.rssFeeds[i].linkField]})
+                pageState.animeListings.push({title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField]})
               }
             }
           }
@@ -381,16 +366,22 @@ FeedMeAnime.reloadAnime = function () {
 FeedMeAnime.reloadFeeds = function () {
     $("#feed-info").html('<div id="feed-info-title">Feeds</div>');
     if (pageState.rssFeeds.length > 0) {
+        //this.updateFeedContents();
+
         for (let i = 0; i < pageState.rssFeeds.length; i++) {
             const feed = pageState.rssFeeds[i];
             $("#feed-info").append(`
-                <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" class="anime-title">
+                <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" data-feed-title-field="${feed.titleField}" data-feed-link-field="${feed.linkField}" class="feed">
+                    <div class="feed-expand"><i class="fas fa-fw fa-caret-right"></i><i class="fas fa-fw fa-caret-down"></i></div>
                     ${feed.title} - ${feed.url}
                     <div class="icon remove-feed">
                         <i class="fa fa-times"></i>
                     </div>
                 </div>
+                <div data-feed-title="${feed.title}" class="feed-contents">
+                </div>
             `);
+
         }
     }
 }
@@ -434,6 +425,23 @@ FeedMeAnime.reloadStorageStats = function () {
     });
 }
 
+FeedMeAnime.reloadMain = function() {
+    $('#overlay').show();
+    $('#overlay').animate({
+        opacity: 1
+    }, 500, async function () {
+        await FMA.sync();
+        $('.active-tab').removeClass('active-tab');
+        $('#sync').addClass('active-tab');
+        $('.content').hide();
+        $('#main').show();
+        $('#main-refresh').show();
+        $('#overlay').animate({ opacity: 0 }, 500, function () {
+            $('#overlay').hide();
+        });
+    });
+}
+
 FeedMeAnime.loadSuggestions = async function () {
     $("#anime-suggestions-options").html("");
     let i = 0;
@@ -452,6 +460,28 @@ FeedMeAnime.loadSuggestions = async function () {
         source: pageState.suggestions.items.map(suggestion => suggestion.attributes["canonicalTitle"]),
         minLength: 2
     });
+}
+
+FeedMeAnime.updateFeedContents = async function () {
+    for (var i = 0; i < pageState.rssFeeds.length; i++) {
+          const rss = await this.getRss(pageState.rssFeeds[i]);
+          if (rss != null) {
+            var objects = rss.items;
+      
+            if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
+                objects = this.getObjects(rss.items, _.get(pageState.filters, pageState.rssFeeds[i].title));
+            }
+
+            if (pageState.rssContents) {
+              if(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1){
+                pageState.rssContents.push({title: pageState.rssFeeds[i].title, contents: objects});
+              }
+            } else {
+              pageState.rssContents = [{title: pageState.rssFeeds[i].title, contents: objects}];
+            }
+          }
+        }
+
 }
 
 FeedMeAnime.getSuggestions = async function () {
@@ -574,25 +604,46 @@ $('#change-settings').click(function () {
 });
 
 $('#sync').click(function () {
-    $('#overlay').show();
-    $('#overlay').animate({
-        opacity: 1
-    }, 500, async function () {
-        await FMA.sync();
-        $('.active-tab').removeClass('active-tab');
-        $('#sync').addClass('active-tab');
-        $('.content').hide();
-        $('#main').show();
-        $('#overlay').animate({ opacity: 0 }, 500, function () {
-            $('#overlay').hide();
-        });
-    });
+    FMA.reloadMain();
 });
 
 $(document).on('click', '.toggle', function () {
     var target = $(this).data('target');
     $(this).children('.fa-fw').toggle();
     $(target).slideToggle();
+})
+
+$(document).on('click', '.feed-expand', async function () {
+    let targetFeed = $(this).parent();
+    let feedTitle = targetFeed.data('feed-title');
+    let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
+
+    if(!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false'){
+        
+        if (FMA.getObjects(pageState.rssContents, 'title', feedTitle).length == 0) {
+            await FMA.updateFeedContents();
+        }
+
+        let feed = FMA.getObjects(pageState.rssContents, 'title', feedTitle)[0];
+        if ($(feedContentContainer).html()){
+            for (let i = 0; i < feed.contents.length; i++) {
+                var entry = feed.contents[i];
+                $(feedContentContainer).append(`
+                    <div class="feed-entry">
+                        <div class="content-title">'${entry["title"]}'</div>
+                        <div class="content-link">${entry["link"]}</div>
+                        <div class="feed-add-anime"><i class="fas fa-thumbtack"></i></div>
+                    </div>`);
+            }
+        }
+        $(feedContentContainer).slideDown();
+        $(this).attr('data-toggled', 'true');
+    } else {
+        $(feedContentContainer).slideUp();
+        $(this).attr('data-toggled', 'false');
+    }
+
+    $(this).children('.fa-fw').toggle();    
 })
 
 $(document).on('click', '.remove-anime', async function () {
@@ -799,8 +850,22 @@ $('#filter-value-input').keypress(async function (e) {
     }
 });
 
+$('#main-refresh-icon').on({
+    mouseenter: function() {
+        $(this).find('#refresh-icon').addClass('fa-spin');
+    },
+    mouseleave: function() {
+        $(this).find('#refresh-icon').removeClass('fa-spin');
+    }
+});
+
+$(document).on('click', '#main-refresh-icon', async function () {
+    pageState.animeListings = [];
+    await FMA.sync();
+});
+
 $(function () {
-    FeedMeAnime.initialize();
+    FeedMeAnime.initialize();  
 });
 
 

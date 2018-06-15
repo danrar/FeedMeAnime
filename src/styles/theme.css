@@ -104,19 +104,15 @@
 	float: right;
 }
 
-#anime-advanced-options, #feed-advanced-options {
+#anime-advanced-options, #feed-advanced-options, .fa-chevron-down, .fa-caret-down, .feed-contents {
 	display: none;
 }
 
-.fa-chevron-left {
-	display: none;
-}
-
-.fa-chevron-down {
+.fa-chevron-left, .fa-caret-right  {
  	display: inline-block;
 }
 
-i.fa-chevron-down, i.fa-chevron-right {
+.fa-chevron-down, .fa-chevron-left, .fa-caret-down, .fa-caret-right {
  	cursor: pointer;
 }
 
