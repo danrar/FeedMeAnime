@@ -43,6 +43,9 @@ const pageState = {
         theme: "Smooth",
         labelAsTag: false
     }
+    //To Add
+    //setting remove duplicates
+    //setting infohash to magnet link
 }
 
 if (!String.prototype.format) {
@@ -90,7 +93,7 @@ FeedMeAnime.initialize = async function () {
     }
 
     FeedMeAnime.setSettings();
-    _.set(pageState.filters, "Nyaa.si", "nyaa:categoryId,1_2");
+    //_.set(pageState.filters, "Nyaa.si", "nyaa:categoryId,1_2");
 
     $("head").append($('<link rel="stylesheet type="text/css" />').attr("href", `content/css/${pageState.settings.theme}.css`));
     $("body").addClass(`theme-${slugify(pageState.settings.theme, { lower: true })}`);
@@ -107,7 +110,7 @@ FeedMeAnime.initialize = async function () {
         pageState.anime = animeCache;
         for (let title in pageState.anime) {
             this.addThumbnail(title.title, title.thumbnailUrl);
-          }
+        }
     }
 
     // Load the rssFeeds
@@ -149,12 +152,18 @@ FeedMeAnime.initialize = async function () {
 }
 
 FeedMeAnime.getRss = async function (feed) {
+    let apiKey = "6qymrrpvstgbeexdzcvmlgp44pilzmtx4s1mqewk";
     try {
         const res = await $.ajax({
-            url: `https://api.rss2json.com/v1/api.json?rss_url=${feed.url}`,
+            url: `https://api.rss2json.com/v1/api.json?`,
             type: "GET",
             cache: false,
-            dataType: "json"
+            dataType: "json",
+            data: {
+                rss_url: feed.url,
+                api_key: apiKey,
+                count: 100
+            }
         });
         //console.log(res);
         return res;
@@ -346,7 +355,7 @@ FeedMeAnime.reloadAnime = function () {
             }
 
             $("#anime-entries").append(`
-                <div data-index="${i}" data-nickname="${animeNickname}" data-title="${animeTitle}" ${animeLabelRaw} class="anime-title">
+                <div data-index="${i}" data-nickname="${animeNickname}" data-title="${animeTitle}" ${animeLabelRaw} data-thumbnailurl="${anime.thumbnailUrl}" class="anime-title">
                     <div class="icon remove-anime" title="Delete">
                         <i class="fa fa-times"></i>
                     </div>
@@ -481,7 +490,6 @@ FeedMeAnime.updateFeedContents = async function () {
             }
           }
         }
-
 }
 
 FeedMeAnime.getSuggestions = async function () {
@@ -614,8 +622,21 @@ $(document).on('click', '.toggle', function () {
 })
 
 $(document).on('click', '.feed-expand', async function () {
+    $('.feed-expand').each(function (){
+
+        let targetFeed = $(this).parent();
+        let feedTitle = targetFeed.data('feed-title');
+        let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
+        $(this).attr('data-toggled', 'false');
+        $(this).find('.fa-caret-down').hide();
+        $(this).find('.fa-caret-right').show();
+        $(feedContentContainer).slideUp();
+    })
+
     let targetFeed = $(this).parent();
     let feedTitle = targetFeed.data('feed-title');
+    let feedTitleField = targetFeed.data('feed-title-field');
+    let feedLinkField = targetFeed.data('feed-link-field');
     let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
 
     if(!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false'){
@@ -629,14 +650,14 @@ $(document).on('click', '.feed-expand', async function () {
             for (let i = 0; i < feed.contents.length; i++) {
                 var entry = feed.contents[i];
                 $(feedContentContainer).append(`
-                    <div class="feed-entry">
-                        <div class="content-title">'${entry["title"]}'</div>
-                        <div class="content-link">${entry["link"]}</div>
+                    <div class="feed-entry" data-item-title="${entry[feedTitleField]}" data-item-link="${entry[feedLinkField]}">
+                        <div class="content-title">${entry[feedTitleField]}</div>
+                        <div class="content-link"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
                         <div class="feed-add-anime"><i class="fas fa-thumbtack"></i></div>
                     </div>`);
             }
         }
-        $(feedContentContainer).slideDown();
+        $(feedContentContainer).delay(200).slideDown();
         $(this).attr('data-toggled', 'true');
     } else {
         $(feedContentContainer).slideUp();
@@ -659,7 +680,7 @@ $(document).on('click', '.remove-anime', async function () {
 $(document).on('click', '.remove-feed', async function () {
     var index = $(this).parent().data('index');
     if (index > -1) {
-        rss.splice(index, 1);
+        pageState.rssFeeds.splice(index, 1);
     }
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
     await FMA.reloadFeeds();
@@ -721,12 +742,15 @@ $(document).on('click', '#anime-add-icons', async function () {
         var matchingAnime = pageState.suggestions.items.filter(suggestion => suggestion.attributes['canonicalTitle'] == title);
         if (matchingAnime.length > 0) {
             await FMA.addThumbnail(matchingAnime[0].attributes['canonicalTitle'], matchingAnime[0].attributes.posterImage['tiny']);
+            thumbnailUrl = matchingAnime[0].attributes.posterImage['tiny'];
         }
     } else {
         await FMA.addThumbnail(title, thumbnailUrl);
     }
 
     var selection = { nickname: nickname, title: title, label: label, thumbnailUrl: thumbnailUrl };
+
+    FMA.pushNotification('Anime ' + nickname + ' added');
 
     pageState.anime.push(selection);
     await FMA.reloadAnime();
@@ -765,6 +789,8 @@ $(document).on('click', '#feed-add-icons', async function () {
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
     await FMA.clearCache();
 
+    FMA.pushNotification('Feed ' + title + ' added');
+
     $('#feed-title-input').val('');
     $('#feed-url-input').val('');
     $('#feed-titleField-input').val('');
@@ -773,9 +799,9 @@ $(document).on('click', '#feed-add-icons', async function () {
   });
 
 $(document).on('click', '.anime-suggestion', async function () {
-    var title = $(this).data('title');
-    var thumbUrl = $(this).data('imageurl');
-    var nickname = prompt("Give " + title + " a nickname? (Leave blank for no nickname)");
+    let title = $(this).data('title');
+    let thumbUrl = $(this).data('imageurl');
+    let nickname = prompt("Give " + title + " a nickname? (Leave blank for no nickname)");
     if (nickname === null) {
         return;
     } else if (!nickname) {
@@ -783,6 +809,45 @@ $(document).on('click', '.anime-suggestion', async function () {
     }
     var selection = { nickname: nickname, title: title, thumbnailUrl: thumbUrl };
     pageState.anime.push(selection);
+
+    FMA.pushNotification('Anime ' + nickname + ' added');
+    await FMA.reloadAnime();
+    await FMA.storage.sync.setItem("animeList", pageState.anime);
+    await FMA.clearCache();
+    await FMA.getDataUri(thumbUrl, async function (dataUri) {
+        if (pageState.thumbnails) {
+            pageState.thumbnails.push({ title: title, data: dataUri });
+        } else {
+            pageState.thumbnails = [{ title: title, data: dataUri }];
+        }
+        await FMA.storage.local.setItem("thumbnailCache", pageState.thumbnails);
+    });
+});
+
+$(document).on('click', '.feed-add-anime', async function () {
+    let itemTitle = $(this).parent().data('item-title');
+    let thumbnailUrl;
+    let nickname;
+    let title = prompt("Please trim the title down to the Anime name", itemTitle);
+
+    if (title === null) {
+        return;
+    } else  {
+        nickname = title;
+    }
+
+    if (!thumbnailUrl) {
+        var matchingAnime = pageState.suggestions.items.filter(suggestion => suggestion.attributes['canonicalTitle'] == title);
+        if (matchingAnime.length > 0) {
+            await FMA.addThumbnail(matchingAnime[0].attributes['canonicalTitle'], matchingAnime[0].attributes.posterImage['tiny']);
+            thumbnailUrl = matchingAnime[0].attributes.posterImage['tiny'];
+        }
+    }
+
+    var selection = { nickname: nickname, title: title, thumbnailUrl: thumbnailUrl };
+    pageState.anime.push(selection);
+
+    FMA.pushNotification('Anime ' + nickname + ' added');
     await FMA.reloadAnime();
     await FMA.storage.sync.setItem("animeList", pageState.anime);
     await FMA.clearCache();
@@ -805,7 +870,7 @@ $(document).on('click', '.change-label', async function () {
     var newLabel = '';
 
     if (label) {
-        newlabel = prompt("Change label for " + nickname + "?", label)
+        newLabel = prompt("Change label for " + nickname + "?", label)
     } else {
         newLabel = prompt("Give " + nickname + " a label?");
     }
@@ -818,10 +883,39 @@ $(document).on('click', '.change-label', async function () {
         pageState.anime[index].label = "";
     }
 
+    FMA.pushNotification('Label changed');
+
     await FMA.reloadAnime();
     await FMA.storage.sync.setItem("animeList", pageState.anime);
     await FMA.clearCache();
-    await FMA.addThumbnail(title, $(this).data('imageurl'));
+});
+
+$(document).on('click', '.change-nickname', async function () {
+    var index = $(this).parent().data('index');
+    var nickname = $(this).parent().data('nickname');
+    var title = $(this).parent().data('title');
+    var label = $(this).parent().data('label');
+
+    var newNick = '';
+
+    if (label) {
+        newNick = prompt("Change nickname for " + nickname + "?", nickname)
+    } else {
+        newNick = prompt("Give " + title + " a nickname?");
+    }
+
+    if (newNick === null) {
+        return;
+    } else if (newNick) {
+        pageState.anime[index].nickname = newNick;
+    } else {
+        pageState.anime[index].nickname = title;
+    }
+    FMA.pushNotification('Nickname changed');
+
+    await FMA.reloadAnime();
+    await FMA.storage.sync.setItem("animeList", pageState.anime);
+    await FMA.clearCache();
 });
 
 

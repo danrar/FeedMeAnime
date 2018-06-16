@@ -60,8 +60,12 @@
 	white-space: nowrap;
 	padding:0 5px 0 15px;
     border: none;
-
 }
+
+#loading-icon {
+	display: none;
+	text-align: center;
+ }
 
 #anime-suggestions {
 	display: none;
@@ -131,9 +135,64 @@
 	position: relative;
 	top: 0px;
 	height: 16px; 
-	width: 200px;
+	min-width: 200px;
 	margin: 10px 10px 0 5px;
     padding: 2px 10px 2px 10px;
     background-color: #f0f0f0;
     box-shadow: 2px 2px #b5b5b5;
+}
+
+.feed {
+	line-height: 20px;
+	font-size: 14px;
+
+}
+
+.feed-expand {
+	float: left;
+}
+
+.feed-contents {
+	max-height: 200px;
+    overflow: auto;
+    width: 500px;
+}
+
+.feed-entry {
+	height: 100%;
+    display: flex;
+    margin: 2px 5px 2px 15px;
+    padding: 2px 0 2px 4px;
+}
+
+.feed-entry:nth-child(odd), .feed-entry .content-link .info-link:nth-child(even){
+	background: #f0f0f0;
+}
+
+.feed-entry .content-link .info-link:nth-child(odd) {
+	background-color: unset;
+}
+
+.feed-entry .content-title {
+	flex: 1 auto;
+	white-space: nowrap;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 5px;
+}
+
+.feed-entry .content-link {
+	flex: 0 100px;
+	line-height: 14px;
+}
+    
+.feed-entry .content-link .info-link {
+	margin: unset;
+	border: 0px;
+	font-size: 10px;
+}
+
+.feed-entry .feed-add-anime {
+	font-size: 14px;
+	margin: 0 5px 0 10px;
 }
