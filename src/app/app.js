@@ -1,11 +1,11 @@
 import * as _ from "lodash";
 import * as slugify from "slugify";
 import * as forage from "localforage";
+import { Logger } from "./logger";
 import { chromeStorageSyncDriver } from "./drivers/sync.driver";
 import { chromeStorageLocalDriver } from "./drivers/local.driver";
 import "../styles/theme.css";
 import "./fonts";
-import { Logger } from "./logger";
 
 const logger = new Logger();
 const FeedMeAnime = {
@@ -25,8 +25,8 @@ const pageState = {
     anime: [],
     rssFeeds: [{
         title: "Horrible Subs",
-        url: "http://horriblesubs.info/rss.php?res=1080", 
-        titleField: 'title', 
+        url: "http://horriblesubs.info/rss.php?res=1080",
+        titleField: 'title',
         linkField: 'link'
     }],
     rssContents: [],
@@ -152,22 +152,17 @@ FeedMeAnime.initialize = async function () {
 }
 
 FeedMeAnime.getRss = async function (feed) {
-    let apiKey = "6qymrrpvstgbeexdzcvmlgp44pilzmtx4s1mqewk";
     try {
         const res = await $.ajax({
-            url: `https://api.rss2json.com/v1/api.json?`,
+            url: feed.url,
             type: "GET",
             cache: false,
-            dataType: "json",
-            data: {
-                rss_url: feed.url,
-                api_key: apiKey,
-                count: 100
-            }
+            dataType: "xml"
         });
-        //console.log(res);
-        return res;
-    } catch {
+        
+        return $.xml2json(res);
+    } catch(err) {
+        console.log(err);
         this.pushNotification("No response from " + feed.title);
         return null;
     }
@@ -179,25 +174,27 @@ FeedMeAnime.sync = async function () {
 
         await this.updateFeedContents();
 
-        for(var i = 0; i < pageState.rssFeeds.length; i++) {
-          var feed = pageState.rssFeeds[i];
-          var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', feed.title)[0]);
-          for(var j = 0; j < pageState.anime.length; j++) {
-            var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
-            var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
+        for (var i = 0; i < pageState.rssFeeds.length; i++) {
+            var feed = pageState.rssFeeds[i];
+            var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', feed.title)[0]);
 
-             for(var k = 0; k < nicknameResults.length; k++) {
-                pageState.animeListings.push({title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField]})
-            }
-
-            for(var l = 0; l < titleResults.length; l++) {
-              if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
-                pageState.animeListings.push({title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField]})
-              }
-            }
-          }
-        }
+            if (contenti >= 0) {
+                for (var j = 0; j < pageState.anime.length; j++) {
+                    var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
+                    var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
     
+                    for (var k = 0; k < nicknameResults.length; k++) {
+                        pageState.animeListings.push({ title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField] })
+                    }
+    
+                    for (var l = 0; l < titleResults.length; l++) {
+                        if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
+                            pageState.animeListings.push({ title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField] })
+                        }
+                    }
+                }
+            }           
+        }
 
         let cacheTime = new Date().getTime();
         let cacheTimeString = {
@@ -272,7 +269,7 @@ FeedMeAnime.filterObjects = function (obj, filterString) {
 FeedMeAnime.getObjects = function (obj, key, val) {
     var objects = [];
     for (var i in obj) {
-        if (!obj.hasOwnProperty(i)){
+        if (!obj.hasOwnProperty(i)) {
             continue;
         }
 
@@ -286,7 +283,7 @@ FeedMeAnime.getObjects = function (obj, key, val) {
                     objects.push(obj);
                 }
             }
-        }        
+        }
     }
     return objects;
 }
@@ -434,7 +431,7 @@ FeedMeAnime.reloadStorageStats = function () {
     });
 }
 
-FeedMeAnime.reloadMain = function() {
+FeedMeAnime.reloadMain = function () {
     $('#overlay').show();
     $('#overlay').animate({
         opacity: 1
@@ -473,23 +470,23 @@ FeedMeAnime.loadSuggestions = async function () {
 
 FeedMeAnime.updateFeedContents = async function () {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
-          const rss = await this.getRss(pageState.rssFeeds[i]);
-          if (rss != null) {
-            var objects = rss.items;
-      
+        const feed = await this.getRss(pageState.rssFeeds[i]);
+        if (feed != null) {
+            var objects = feed;
+
             if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
-                objects = this.getObjects(rss.items, _.get(pageState.filters, pageState.rssFeeds[i].title));
+                objects = this.getObjects(feed, _.get(pageState.filters, pageState.rssFeeds[i].title));
             }
 
             if (pageState.rssContents) {
-              if(this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1){
-                pageState.rssContents.push({title: pageState.rssFeeds[i].title, contents: objects});
-              }
+                if (this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1) {
+                    pageState.rssContents.push({ title: pageState.rssFeeds[i].title, contents: objects });
+                }
             } else {
-              pageState.rssContents = [{title: pageState.rssFeeds[i].title, contents: objects}];
+                pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
             }
-          }
         }
+    }
 }
 
 FeedMeAnime.getSuggestions = async function () {
@@ -509,7 +506,7 @@ FeedMeAnime.getSuggestions = async function () {
 
 FeedMeAnime.addThumbnail = async function (title, imageUrl) {
     let self = this;
-    if (self.getObjects(pageState.thumbnails, 'title', title).length < 1){
+    if (self.getObjects(pageState.thumbnails, 'title', title).length < 1) {
         await self.getDataUri(imageUrl, async function (dataUri) {
             if (pageState.thumbnails) {
                 pageState.thumbnails.push({
@@ -622,7 +619,7 @@ $(document).on('click', '.toggle', function () {
 })
 
 $(document).on('click', '.feed-expand', async function () {
-    $('.feed-expand').each(function (){
+    $('.feed-expand').each(function () {
 
         let targetFeed = $(this).parent();
         let feedTitle = targetFeed.data('feed-title');
@@ -639,14 +636,14 @@ $(document).on('click', '.feed-expand', async function () {
     let feedLinkField = targetFeed.data('feed-link-field');
     let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
 
-    if(!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false'){
-        
+    if (!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false') {
+
         if (FMA.getObjects(pageState.rssContents, 'title', feedTitle).length == 0) {
             await FMA.updateFeedContents();
         }
 
         let feed = FMA.getObjects(pageState.rssContents, 'title', feedTitle)[0];
-        if ($(feedContentContainer).html()){
+        if ($(feedContentContainer).html()) {
             for (let i = 0; i < feed.contents.length; i++) {
                 var entry = feed.contents[i];
                 $(feedContentContainer).append(`
@@ -664,7 +661,7 @@ $(document).on('click', '.feed-expand', async function () {
         $(this).attr('data-toggled', 'false');
     }
 
-    $(this).children('.fa-fw').toggle();    
+    $(this).children('.fa-fw').toggle();
 })
 
 $(document).on('click', '.remove-anime', async function () {
@@ -769,21 +766,21 @@ $(document).on('click', '#feed-add-icons', async function () {
     var linkField = $('#feed-linkField-input').val();
 
     if (!title || !url) {
-      var error = $('#error-message');
-      error.html('Every feed needs both a title and a url to it\'s contents').dialog({appendTo: "#error-wrapper", dialogClass: 'error-position'});
-      return;
+        var error = $('#error-message');
+        error.html('Every feed needs both a title and a url to it\'s contents').dialog({ appendTo: "#error-wrapper", dialogClass: 'error-position' });
+        return;
     }
 
-    if(!titleField) {
-      titleField = 'title';
+    if (!titleField) {
+        titleField = 'title';
     }
 
-    if(!linkField) {
-      linkField = 'link';
+    if (!linkField) {
+        linkField = 'link';
     }
 
 
-    pageState.rssFeeds.push({title: title, url: url, titleField: titleField, linkField: linkField});
+    pageState.rssFeeds.push({ title: title, url: url, titleField: titleField, linkField: linkField });
 
     await FMA.reloadFeeds();
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
@@ -796,7 +793,7 @@ $(document).on('click', '#feed-add-icons', async function () {
     $('#feed-titleField-input').val('');
     $('#feed-linkField-input').val('');
 
-  });
+});
 
 $(document).on('click', '.anime-suggestion', async function () {
     let title = $(this).data('title');
@@ -832,7 +829,7 @@ $(document).on('click', '.feed-add-anime', async function () {
 
     if (title === null) {
         return;
-    } else  {
+    } else {
         nickname = title;
     }
 
@@ -945,10 +942,10 @@ $('#filter-value-input').keypress(async function (e) {
 });
 
 $('#main-refresh-icon').on({
-    mouseenter: function() {
+    mouseenter: function () {
         $(this).find('#refresh-icon').addClass('fa-spin');
     },
-    mouseleave: function() {
+    mouseleave: function () {
         $(this).find('#refresh-icon').removeClass('fa-spin');
     }
 });
@@ -959,7 +956,7 @@ $(document).on('click', '#main-refresh-icon', async function () {
 });
 
 $(function () {
-    FeedMeAnime.initialize();  
+    FeedMeAnime.initialize();
 });
 
 

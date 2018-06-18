@@ -59,7 +59,8 @@ const options = {
             fileName: "[name].bundle.js",
             filesToConcat: [
                 "jquery/dist/jquery.min.js",
-                "jquery-ui-dist/jquery-ui.min.js"
+                "jquery-ui-dist/jquery-ui.min.js",
+                "./src/app/xml2json.js"
             ]
         }),
         new CopyWebpackPlugin([{
