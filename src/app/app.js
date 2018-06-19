@@ -151,16 +151,17 @@ FeedMeAnime.initialize = async function () {
     }
 }
 
-FeedMeAnime.getRss = async function (feed) {
+FeedMeAnime.getRss = async function (feed, skipCache = false) {
     try {
+        debugger;
         const res = await $.ajax({
-            url: feed.url,
+            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=${skipCache}&rssUrl=${feed.url}`,
             type: "GET",
             cache: false,
-            dataType: "xml"
+            dataType: "json"
         });
-        
-        return $.xml2json(res);
+        return res;
+        //return $.xml2json(res);
     } catch(err) {
         console.log(err);
         this.pushNotification("No response from " + feed.title);
