@@ -153,7 +153,6 @@ FeedMeAnime.initialize = async function () {
 
 FeedMeAnime.getRss = async function (feed, skipCache = false) {
     try {
-        debugger;
         const res = await $.ajax({
             url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=${skipCache}&rssUrl=${feed.url}`,
             type: "GET",
@@ -162,7 +161,7 @@ FeedMeAnime.getRss = async function (feed, skipCache = false) {
         });
         return res;
         //return $.xml2json(res);
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         this.pushNotification("No response from " + feed.title);
         return null;
@@ -183,18 +182,18 @@ FeedMeAnime.sync = async function () {
                 for (var j = 0; j < pageState.anime.length; j++) {
                     var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
                     var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
-    
+
                     for (var k = 0; k < nicknameResults.length; k++) {
                         pageState.animeListings.push({ title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField] })
                     }
-    
+
                     for (var l = 0; l < titleResults.length; l++) {
                         if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
                             pageState.animeListings.push({ title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField] })
                         }
                     }
                 }
-            }           
+            }
         }
 
         let cacheTime = new Date().getTime();
@@ -320,6 +319,20 @@ FeedMeAnime.getPopular = async function (offset) {
         return res;
     } catch {
         this.pushNotification("Could not get listing of popular anime.");
+        return null;
+    }
+}
+
+FeedMeAnime.getAnimeDetails = async function (searchText) {
+    try {
+        const res = await $.ajax({
+            url: `https://kitsu.io/api/edge/anime?filter[text]=${searchText}&page[limit]=1&fields[anime]=canonicalTitle,posterImage`,
+            cache: false,
+            dataType: "json"
+        });
+        return res;
+    } catch {
+        this.pushNotification("Could not retrieve any anime details.");
         return null;
     }
 }
@@ -473,10 +486,10 @@ FeedMeAnime.updateFeedContents = async function () {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
         const feed = await this.getRss(pageState.rssFeeds[i]);
         if (feed != null) {
-            var objects = feed;
+            var objects = _.get(feed, "rss.channel.item");
 
             if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
-                objects = this.getObjects(feed, _.get(pageState.filters, pageState.rssFeeds[i].title));
+                objects = this.getObjects(_.get(feed, "rss.channel.item"), _.get(pageState.filters, pageState.rssFeeds[i].title));
             }
 
             if (pageState.rssContents) {
@@ -722,6 +735,7 @@ $(document).on('click', '#clear-cache', async function () {
 });
 
 $(document).on('click', '#anime-add-icons', async function () {
+    debugger;
     var title = $('#anime-title-input').val();
     var nickname = $('#anime-nickname-input').val();
     var label = $('#anime-label-input').val();
@@ -737,10 +751,17 @@ $(document).on('click', '#anime-add-icons', async function () {
     }
 
     if (!thumbnailUrl) {
-        var matchingAnime = pageState.suggestions.items.filter(suggestion => suggestion.attributes['canonicalTitle'] == title);
-        if (matchingAnime.length > 0) {
-            await FMA.addThumbnail(matchingAnime[0].attributes['canonicalTitle'], matchingAnime[0].attributes.posterImage['tiny']);
-            thumbnailUrl = matchingAnime[0].attributes.posterImage['tiny'];
+        let animeDetails = await FMA.getAnimeDetails(title);
+
+        if (animeDetails.data.length == 0) {
+            var matchingAnime = pageState.suggestions.items.filter(suggestion => suggestion.attributes['canonicalTitle'] == title);
+            if (matchingAnime.length > 0) {
+                await FMA.addThumbnail(matchingAnime[0].attributes['canonicalTitle'], matchingAnime[0].attributes.posterImage['tiny']);
+                thumbnailUrl = matchingAnime[0].attributes.posterImage['tiny'];
+            }
+        } else {
+            await FMA.addThumbnail(animeDetails.data[0].attributes["canonicalTitle"], animeDetails.data[0].attributes.posterImage['tiny']);
+            thumbnailUrl = animeDetails.data[0].attributes.posterImage['tiny'];
         }
     } else {
         await FMA.addThumbnail(title, thumbnailUrl);
