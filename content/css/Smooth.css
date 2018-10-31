@@ -70,7 +70,7 @@ Main Page
 	padding-left: 15px;
 }
 
-#main .info-link,#main .info-label {
+#main .info-link,#main .consolidate-info-link, #main .info-label {
 	background-color: #FFF;
 	font-size: 10pt;
 	color: #000;
@@ -79,7 +79,30 @@ Main Page
 
 #main .anime-block {
 	overflow: hidden;
-	padding: 5px 3px;
+	padding: 8px 3px;
+}
+
+#main .anime-block .info-link-title{
+	font-size: 7pt;
+    font-weight: bold;
+    width: 300px;
+    padding: 0 5px 0 15px;
+    overflow: hidden;
+    word-break: break-all;
+    margin-top: 5px;
+}
+
+#main .anime-block .consolidate-info-link {
+	padding-left: 25px;
+	margin-top: 0px;
+	width: 290px;
+}
+
+#main .anime-block .output-link {
+	width: 300px;
+    padding: 0 5px 0 15px;
+    overflow: hidden;
+    word-break: break-all;
 }
 
 #main #anime-info .anime-title {
@@ -96,6 +119,9 @@ Main Page
 
 #loading-icon { 
 	color: #b5b5b5;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
 }
 
 #footer #main-refresh {

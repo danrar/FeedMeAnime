@@ -56,7 +56,7 @@
 	word-wrap: break-word;
 }
 
-#main .info-link,#main .info-label {
+#main .info-link, #main .consolidate-info-link, #main .info-label {
 	white-space: nowrap;
 	padding:0 5px 0 15px;
     border: none;

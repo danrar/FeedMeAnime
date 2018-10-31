@@ -42,7 +42,8 @@ const pageState = {
     settings: {
         theme: "Smooth",
         labelAsTag: false,
-        parseLinks: true
+        parseLinks: false,
+        consolidateResults: false 
     }
     //To Add
     //setting remove duplicates
@@ -74,6 +75,7 @@ FeedMeAnime.setSettings = function () {
 
     $("#label-tag-checkbox").prop("checked", pageState.settings.labelAsTag);
     $("#parse-links-checkbox").prop("checked", pageState.settings.parseLinks);
+    $("#consolidate-results-checkbox").prop("checked", pageState.settings.consolidateResults);
 }
 
 FeedMeAnime.initStorage = async function () {
@@ -132,6 +134,12 @@ FeedMeAnime.initialize = async function () {
         var timeString = _.get(cacheTimeString, "date");
         maxCache = new Date(new Date(timeString).getTime() + 1800000);
     }
+
+    $(document).ajaxStart(function() {
+        $('#loading-icon').show();
+    }).ajaxStop(function() {
+        $('#loading-icon').hide();
+    })
 
     if (maxCache && maxCache > pageState.loadTime) {
         const animeListings = await this.storage.local.getItem("animeListings");
@@ -217,45 +225,34 @@ FeedMeAnime.sync = async function () {
         if (results.length === 0) {
             results = this.getObjects(pageState.animeListings, "title", title.title);
         }
-        _.forEach(results, (val) => {
-            let imgString = "";
 
-            if (pageState.thumbnails) {
-                let thumb = this.getObjects(pageState.thumbnails, "title", title.nickname);
-                if (thumb.length == 0) {
-                    thumb = this.getObjects(pageState.thumbnails, "title", title.title);
-                }
+        let animeIdent = title.nickname;
 
-                if (thumb.length > 0) {
-                    imgString = `<img class="anime-thumbnail" src="${thumb[0].data}"/>`;
-                }
+        if (pageState.settings.labelAsTag && title.label) {
+            animeIdent = title.label;
+        }
+
+        let defaultTag = "{0} (A)";
+
+        let tagText = defaultTag.format(animeIdent);
+        let imgString = "";
+
+        if (pageState.thumbnails) {
+            let thumb = this.getObjects(pageState.thumbnails, "title", title.nickname);
+            if (thumb.length == 0) {
+                thumb = this.getObjects(pageState.thumbnails, "title", title.title);
             }
 
-            let animeIdent = title.nickname;
-            if (pageState.settings.labelAsTag && title.label) {
-                animeIdent = title.label;
+            if (thumb.length > 0) {
+                imgString = `<img class="anime-thumbnail" src="${thumb[0].data}"/>`;
             }
+        }
 
-            let payoffCode = `<input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
-            if (pageState.settings.parseLinks) {
-                if (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://')) {
-                    payoffCode = `<a href="${val["link"]}">${val["link"]}</a>`;
-                }
-            }
-            
-            let defaultTag = "{0} (A)";
-            let tagText = defaultTag.format(animeIdent);
-            $("#main").append(`<div class="anime-block">
-                                    ${imgString}
-                                    <div data-title="${val["title"]}" data-link="${val["link"]}" class="result">
-                                        <div class="info-title">${val["title"]}</div>
-                                        <div class="anime-outputs">
-                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
-                                            ${payoffCode}
-                                        </div>
-                                    </div>
-                                </div>`);
-        });
+        if(pageState.settings.consolidateResults) {
+            FeedMeAnime.consolidateResults(results, title, imgString, tagText);
+        } else {
+            FeedMeAnime.listResults(results, imgString, tagText);
+        }
     }
 }
 
@@ -491,7 +488,7 @@ FeedMeAnime.loadSuggestions = async function () {
     });
 }
 
-FeedMeAnime.updateFeedContents = async function () {
+/*FeedMeAnime.updateFeedContents = async function () {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
         const feed = await this.getRss(pageState.rssFeeds[i]);
         if (feed != null) {
@@ -507,6 +504,29 @@ FeedMeAnime.updateFeedContents = async function () {
                 }
             } else {
                 pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
+            }
+        }
+    }
+}*/
+
+FeedMeAnime.updateFeedContents = async function (feedTitle) {
+    for (var i = 0; i < pageState.rssFeeds.length; i++) {
+        if (pageState.rssFeeds[i].title == feedTitle) {
+            const feed = await this.getRss(pageState.rssFeeds[i]);
+            if (feed != null) {
+                var objects = _.get(feed, "rss.channel.item");
+    
+                if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
+                    objects = this.getObjects(_.get(feed, "rss.channel.item"), _.get(pageState.filters, pageState.rssFeeds[i].title));
+                }
+    
+                if (pageState.rssContents) {
+                    if (this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1) {
+                        pageState.rssContents.push({ title: pageState.rssFeeds[i].title, contents: objects });
+                    }
+                } else {
+                    pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
+                }
             }
         }
     }
@@ -547,6 +567,65 @@ FeedMeAnime.addThumbnail = async function (title, imageUrl) {
 
             await self.storage.local.setItem("thumbnailCache", pageState.thumbnails);
         });
+    }
+}
+
+FeedMeAnime.listResults = async function(results, imgString, tagText) {
+    _.forEach(results, (val) => {
+        let payoffCode = `<input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
+
+        if (pageState.settings.parseLinks) {
+            if (!val["link"].includes('magnet:') && (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://'))) {
+                payoffCode = `<div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div>`;
+            }
+        }
+
+       $("#main").append(`<div class="anime-block">
+                                   ${imgString}
+                                   <div data-title="${val["title"]}" class="result">
+                                       <div class="info-title">${val["title"]}</div>
+                                       <div class="anime-outputs">
+                                           <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                           ${payoffCode}
+                                           </div>
+                                   </div>
+                               </div>`);
+    });
+}
+
+FeedMeAnime.consolidateResults = async function(results, title, imgString, tagText) { 
+    let individualResults = [];
+
+    _.forEach(results, (val) => {
+        let payoffCode = `<div class="info-link-title">${val["title"]}</div><input type="text" class="consolidate-info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
+
+        if (pageState.settings.parseLinks) {
+            if (!val["link"].includes('magnet:') && (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://'))) {
+                payoffCode = `<div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div>`;
+            }
+        }
+        individualResults.push({
+            title: val["title"],
+            link: val["link"],
+            payoff: payoffCode
+        })
+    });
+
+    if(individualResults.length > 0){
+        let allPayoffs = "";
+        _.forEach(individualResults, (val) => {
+            allPayoffs = allPayoffs + val["payoff"];
+           });
+       $("#main").append(`<div class="anime-block">
+                                   ${imgString}
+                                   <div data-title="${title.title}" class="result">
+                                       <div class="info-title">${title.title}</div>
+                                       <div class="anime-outputs">
+                                           <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                           ${allPayoffs}
+                                           </div>
+                                   </div>
+                               </div>`);
     }
 }
 
@@ -635,6 +714,12 @@ $('#sync').click(function () {
     FMA.reloadMain();
 });
 
+$(document).on('click', 'a[target="_blank"]', function(e){
+    e.preventDefault();
+    chrome.tabs.create({url: $(this).prop('href'), active: false});
+    return false;
+});
+
 $(document).on('click', '.toggle', function () {
     var target = $(this).data('target');
     $(this).children('.fa-fw').toggle();
@@ -662,7 +747,7 @@ $(document).on('click', '.feed-expand', async function () {
     if (!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false') {
 
         if (FMA.getObjects(pageState.rssContents, 'title', feedTitle).length == 0) {
-            await FMA.updateFeedContents();
+            await FMA.updateFeedContents(feedTitle);
         }
 
         let feed = FMA.getObjects(pageState.rssContents, 'title', feedTitle)[0];
@@ -671,9 +756,9 @@ $(document).on('click', '.feed-expand', async function () {
                 var entry = feed.contents[i];
                 $(feedContentContainer).append(`
                     <div class="feed-entry" data-item-title="${entry[feedTitleField]}" data-item-link="${entry[feedLinkField]}">
-                        <div class="content-title">${entry[feedTitleField]}</div>
+                        <div class="content-title" title="${entry[feedTitleField]}">${entry[feedTitleField]}</div>
                         <div class="content-link"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
-                        <div class="feed-add-anime"><i class="fas fa-thumbtack"></i></div>
+                        <div class="feed-add-anime" title="Add associated Anime"><i class="fas fa-thumbtack"></i></div>
                     </div>`);
             }
         }
@@ -723,6 +808,7 @@ $(document).on('click', '#save-settings', async function () {
     });
     pageState.settings.labelAsTag = $('#label-tag-checkbox').prop('checked');
     pageState.settings.parseLinks = $('#parse-links-checkbox').prop('checked');
+    pageState.settings.consolidateResults = $('#consolidate-results-checkbox').prop('checked');
     await FMA.storage.sync.setItem("filters", pageState.filters);
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
     location.reload();
@@ -736,6 +822,9 @@ $(document).on('click', '.clipboard-title-copy', function () {
 
 $(document).on('click', '.clipboard-magnet-copy', function () {
     var copyText = $(this).closest('.result').find('.info-link')[0]
+    if(copyText == null){
+        copyText = $(this).closest('.result').find('.consolidate-info-link')[0]
+    }
     copyText.select();
     document.execCommand("Copy");
 });
