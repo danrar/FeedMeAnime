@@ -41,7 +41,8 @@ const pageState = {
     loadTime: $.now(),
     settings: {
         theme: "Smooth",
-        labelAsTag: false
+        labelAsTag: false,
+        parseLinks: true
     }
     //To Add
     //setting remove duplicates
@@ -72,6 +73,7 @@ FeedMeAnime.setSettings = function () {
     });
 
     $("#label-tag-checkbox").prop("checked", pageState.settings.labelAsTag);
+    $("#parse-links-checkbox").prop("checked", pageState.settings.parseLinks);
 }
 
 FeedMeAnime.initStorage = async function () {
@@ -108,7 +110,7 @@ FeedMeAnime.initialize = async function () {
     const animeCache = await this.storage.sync.getItem("animeList");
     if (animeCache != null) {
         pageState.anime = animeCache;
-        for (let title in pageState.anime) {
+        for (let title of pageState.anime) {
             this.addThumbnail(title.title, title.thumbnailUrl);
         }
     }
@@ -234,6 +236,13 @@ FeedMeAnime.sync = async function () {
                 animeIdent = title.label;
             }
 
+            let payoffCode = `<input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
+            if (pageState.settings.parseLinks) {
+                if (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://')) {
+                    payoffCode = `<a href="${val["link"]}">${val["link"]}</a>`;
+                }
+            }
+            
             let defaultTag = "{0} (A)";
             let tagText = defaultTag.format(animeIdent);
             $("#main").append(`<div class="anime-block">
@@ -242,7 +251,7 @@ FeedMeAnime.sync = async function () {
                                         <div class="info-title">${val["title"]}</div>
                                         <div class="anime-outputs">
                                             <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
-                                            <input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                            ${payoffCode}
                                         </div>
                                     </div>
                                 </div>`);
@@ -713,6 +722,7 @@ $(document).on('click', '#save-settings', async function () {
         }
     });
     pageState.settings.labelAsTag = $('#label-tag-checkbox').prop('checked');
+    pageState.settings.parseLinks = $('#parse-links-checkbox').prop('checked');
     await FMA.storage.sync.setItem("filters", pageState.filters);
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
     location.reload();
