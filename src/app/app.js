@@ -488,30 +488,9 @@ FeedMeAnime.loadSuggestions = async function () {
     });
 }
 
-/*FeedMeAnime.updateFeedContents = async function () {
+FeedMeAnime.updateFeedContents = async function (feedTitle = null) {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
-        const feed = await this.getRss(pageState.rssFeeds[i]);
-        if (feed != null) {
-            var objects = _.get(feed, "rss.channel.item");
-
-            if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
-                objects = this.getObjects(_.get(feed, "rss.channel.item"), _.get(pageState.filters, pageState.rssFeeds[i].title));
-            }
-
-            if (pageState.rssContents) {
-                if (this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1) {
-                    pageState.rssContents.push({ title: pageState.rssFeeds[i].title, contents: objects });
-                }
-            } else {
-                pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
-            }
-        }
-    }
-}*/
-
-FeedMeAnime.updateFeedContents = async function (feedTitle) {
-    for (var i = 0; i < pageState.rssFeeds.length; i++) {
-        if (pageState.rssFeeds[i].title == feedTitle) {
+        if (feedTitle == null || pageState.rssFeeds[i].title == feedTitle) {
             const feed = await this.getRss(pageState.rssFeeds[i]);
             if (feed != null) {
                 var objects = _.get(feed, "rss.channel.item");
@@ -581,14 +560,16 @@ FeedMeAnime.listResults = async function(results, imgString, tagText) {
         }
 
        $("#main").append(`<div class="anime-block">
-                                   ${imgString}
-                                   <div data-title="${val["title"]}" class="result">
-                                       <div class="info-title">${val["title"]}</div>
-                                       <div class="anime-outputs">
-                                           <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
-                                           ${payoffCode}
-                                           </div>
-                                   </div>
+                                    ${imgString}
+                                    <div data-title="${val["title"]}" class="result">
+                                        <div class="info-title">${val["title"]}</div>
+                                        <div class="anime-outputs">
+                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                            ${payoffCode}
+                                            </div>
+                                    </div>
+                                    <div class="viewed-overlay"></div>
+                                    <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>
                                </div>`);
     });
 }
@@ -625,6 +606,8 @@ FeedMeAnime.consolidateResults = async function(results, title, imgString, tagTe
                                            ${allPayoffs}
                                            </div>
                                    </div>
+                                   <div class="viewed-overlay"></div>
+                                <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>
                                </div>`);
     }
 }
