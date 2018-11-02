@@ -1,6 +1,7 @@
 import * as _ from "lodash";
 import * as slugify from "slugify";
 import * as forage from "localforage";
+import * as CryptoJS from "crypto-js";
 import { Logger } from "./logger";
 import { chromeStorageSyncDriver } from "./drivers/sync.driver";
 import { chromeStorageLocalDriver } from "./drivers/local.driver";
@@ -27,7 +28,8 @@ const pageState = {
         title: "Horrible Subs",
         url: "http://horriblesubs.info/rss.php?res=1080",
         titleField: 'title',
-        linkField: 'link'
+        linkField: 'link',
+        active: true
     }],
     rssContents: [],
     suggestions: {
@@ -35,6 +37,7 @@ const pageState = {
         display: 40,
         items: []
     },
+    seenHashes: [],
     filters: {},
     thumbnails: [],
     lastCacheTime: new Date(),
@@ -123,6 +126,11 @@ FeedMeAnime.initialize = async function () {
         pageState.rssFeeds = rssFeeds;
     }
 
+    const seenHashes = await this.storage.sync.getItem("seenHashes");
+    if (seenHashes != null) {
+        pageState.seenHashes = seenHashes;
+    }
+
     const filters = await this.storage.sync.getItem("filters");
     if (filters != null) {
         pageState.filters = filters;
@@ -186,20 +194,22 @@ FeedMeAnime.sync = async function () {
 
         for (var i = 0; i < pageState.rssFeeds.length; i++) {
             var feed = pageState.rssFeeds[i];
-            var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', feed.title)[0]);
-
-            if (contenti >= 0) {
-                for (var j = 0; j < pageState.anime.length; j++) {
-                    var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
-                    var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
-
-                    for (var k = 0; k < nicknameResults.length; k++) {
-                        pageState.animeListings.push({ title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField] })
-                    }
-
-                    for (var l = 0; l < titleResults.length; l++) {
-                        if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
-                            pageState.animeListings.push({ title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField] })
+            if(feed.active || feed.active == undefined) {
+                var contenti = pageState.rssContents.indexOf(this.getObjects(pageState.rssContents, 'title', feed.title)[0]);
+    
+                if (contenti >= 0) {
+                    for (var j = 0; j < pageState.anime.length; j++) {
+                        var nicknameResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].nickname);
+                        var titleResults = this.getObjects(pageState.rssContents[contenti].contents, feed.titleField, pageState.anime[j].title);
+    
+                        for (var k = 0; k < nicknameResults.length; k++) {
+                            pageState.animeListings.push({ title: nicknameResults[k][feed.titleField], link: nicknameResults[k][feed.linkField] })
+                        }
+    
+                        for (var l = 0; l < titleResults.length; l++) {
+                            if (this.getObjects(pageState.animeListings, 'title', pageState.anime[j].title).length < 1) {
+                                pageState.animeListings.push({ title: titleResults[l][feed.titleField], link: titleResults[l][feed.linkField] })
+                            }
                         }
                     }
                 }
@@ -216,7 +226,7 @@ FeedMeAnime.sync = async function () {
     await this.storage.local.setItem("animeListings", pageState.animeListings);
 
     if (pageState.animeListings.length === 0) {
-        $("#main").append(`<div class="no-anime-text">No anime you are following are present in your RSS feeds currently.</div>`);
+        $("#main").append(`<div class="no-anime-text">No anime you are following are present in your active RSS feeds currently.</div>`);
         return;
     }
 
@@ -251,7 +261,7 @@ FeedMeAnime.sync = async function () {
         if(pageState.settings.consolidateResults) {
             FeedMeAnime.consolidateResults(results, title, imgString, tagText);
         } else {
-            FeedMeAnime.listResults(results, imgString, tagText);
+            FeedMeAnime.listResults(results, title, imgString, tagText);
         }
     }
 }
@@ -549,17 +559,17 @@ FeedMeAnime.addThumbnail = async function (title, imageUrl) {
     }
 }
 
-FeedMeAnime.listResults = async function(results, imgString, tagText) {
+FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
     _.forEach(results, (val) => {
-        let payoffCode = `<input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
+        let payoffCode = `<div class="output"><input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div></div>`;
 
         if (pageState.settings.parseLinks) {
             if (!val["link"].includes('magnet:') && (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://'))) {
-                payoffCode = `<div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div>`;
+                payoffCode = `<div class="output"><div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div></div>`;
             }
         }
-
-       $("#main").append(`<div class="anime-block">
+        var titleHash = CryptoJS.HmacSHA1(val["title"], "password").toString();
+        $("#main").append(`<div class="anime-block" id="${titleHash}">
                                     ${imgString}
                                     <div data-title="${val["title"]}" class="result">
                                         <div class="info-title">${val["title"]}</div>
@@ -571,6 +581,13 @@ FeedMeAnime.listResults = async function(results, imgString, tagText) {
                                     <div class="viewed-overlay"></div>
                                     <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>
                                </div>`);
+
+       _.forEach(pageState.seenHashes, (val) => {
+            if (val == titleHash) {
+                FeedMeAnime.setAnimeSeen($(`#` + titleHash));
+
+            }
+        });
     });
 }
 
@@ -578,11 +595,11 @@ FeedMeAnime.consolidateResults = async function(results, title, imgString, tagTe
     let individualResults = [];
 
     _.forEach(results, (val) => {
-        let payoffCode = `<div class="info-link-title">${val["title"]}</div><input type="text" class="consolidate-info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div>`;
+        let payoffCode = `<div class="output"><div class="info-link-title">${val["title"]}</div><input type="text" class="consolidate-info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div></div>`;
 
         if (pageState.settings.parseLinks) {
             if (!val["link"].includes('magnet:') && (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://'))) {
-                payoffCode = `<div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div>`;
+                payoffCode = `<div class="output"><div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div></div>`;
             }
         }
         individualResults.push({
@@ -598,18 +615,41 @@ FeedMeAnime.consolidateResults = async function(results, title, imgString, tagTe
             allPayoffs = allPayoffs + val["payoff"];
            });
        $("#main").append(`<div class="anime-block">
-                                   ${imgString}
-                                   <div data-title="${title.title}" class="result">
-                                       <div class="info-title">${title.title}</div>
-                                       <div class="anime-outputs">
-                                           <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
-                                           ${allPayoffs}
-                                           </div>
-                                   </div>
-                                   <div class="viewed-overlay"></div>
-                                <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>
-                               </div>`);
+                                    ${imgString}
+                                    <div data-title="${title.title}" class="result">
+                                        <div class="info-title">${title.title}</div>
+                                        <div class="anime-outputs">
+                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                            ${allPayoffs}
+                                            </div>
+                                    </div>
+                                    
+                                </div>`);
+       /*<div class="viewed-overlay"></div>
+                                    <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>*/
     }
+}
+
+FeedMeAnime.setAnimeSeen = function(animeBlock) {
+    var icon = animeBlock.find('.anime-seen');
+    var overlay = animeBlock.find('.viewed-overlay');
+    icon.data('toggled', true);
+    icon.css({opacity: "1"});
+    overlay.show();
+    if (pageState.seenHashes.indexOf(animeBlock.attr('id')) == -1) {
+        pageState.seenHashes.push(animeBlock.attr('id'));
+    }
+}
+
+FeedMeAnime.unsetAnimeSeen = function(animeBlock) {
+    var icon = animeBlock.find('.anime-seen');
+    var overlay = animeBlock.find('.viewed-overlay');
+    icon.data('toggled', false);
+    icon.css({opacity: "0.3"});
+    overlay.hide();
+
+    pageState.seenHashes.splice(pageState.seenHashes.indexOf(animeBlock.attr('id'), 1));
+
 }
 
 FeedMeAnime.getDataUri = function (url, callback) {
@@ -798,18 +838,29 @@ $(document).on('click', '#save-settings', async function () {
 })
 
 $(document).on('click', '.clipboard-title-copy', function () {
-    var copyText = $(this).closest('.result').find('.info-label')[0]
+    var copyText = $(this).closest('.results').find('.info-label')[0]
     copyText.select();
     document.execCommand("Copy");
 });
 
 $(document).on('click', '.clipboard-magnet-copy', function () {
-    var copyText = $(this).closest('.result').find('.info-link')[0]
+    var copyText = $(this).closest('.output').find('.info-link')[0]
     if(copyText == null){
-        copyText = $(this).closest('.result').find('.consolidate-info-link')[0]
+        copyText = $(this).closest('.output').find('.consolidate-info-link')[0]
     }
     copyText.select();
     document.execCommand("Copy");
+});
+
+$(document).on('click', '.anime-seen', async function () {
+    var animeBlock = $(this).closest('.anime-block')
+    if ($(this).data('toggled')){
+        FeedMeAnime.unsetAnimeSeen(animeBlock);
+    } else {
+        FeedMeAnime.setAnimeSeen(animeBlock);
+    }
+
+    await FMA.storage.sync.setItem("seenHashes", pageState.seenHashes);
 });
 
 $(document).on('click', '#clear-cache', async function () {
@@ -884,7 +935,7 @@ $(document).on('click', '#feed-add-icons', async function () {
     }
 
 
-    pageState.rssFeeds.push({ title: title, url: url, titleField: titleField, linkField: linkField });
+    pageState.rssFeeds.push({ title: title, url: url, titleField: titleField, linkField: linkField, active: true });
 
     await FMA.reloadFeeds();
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
