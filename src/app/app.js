@@ -229,7 +229,7 @@ FeedMeAnime.sync = async function () {
         $("#main").append(`<div class="no-anime-text">No anime you are following are present in your active RSS feeds currently.</div>`);
         return;
     }
-
+    var toReorder = [];
     for (let title of pageState.anime) {
         let results = this.getObjects(pageState.animeListings, "title", title.nickname);
         if (results.length === 0) {
@@ -261,9 +261,14 @@ FeedMeAnime.sync = async function () {
         if(pageState.settings.consolidateResults) {
             FeedMeAnime.consolidateResults(results, title, imgString, tagText);
         } else {
-            FeedMeAnime.listResults(results, title, imgString, tagText);
+            var array = await FeedMeAnime.listResults(results, title, imgString, tagText);
+            toReorder.push.apply(toReorder, array);
         }
     }
+
+    _.forEach(toReorder, (val) => {
+        FeedMeAnime.setAnimeSeen($('#' + val));
+    });
 }
 
 FeedMeAnime.filterObjects = function (obj, filterString) {
@@ -406,10 +411,16 @@ FeedMeAnime.reloadFeeds = function () {
 
         for (let i = 0; i < pageState.rssFeeds.length; i++) {
             const feed = pageState.rssFeeds[i];
+            var active = feed.active == undefined ? true : feed.active;
+            var boltClass= active ? ` feed-active` : ``;
             $("#feed-info").append(`
-                <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" data-feed-title-field="${feed.titleField}" data-feed-link-field="${feed.linkField}" class="feed">
+                <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" data-feed-title-field="${feed.titleField}" data-feed-link-field="${feed.linkField}" data-active="${active}" class="feed">
                     <div class="feed-expand"><i class="fas fa-fw fa-caret-right"></i><i class="fas fa-fw fa-caret-down"></i></div>
-                    ${feed.title} - ${feed.url}
+                    <div class="feed-title-text">${feed.title} -</div>
+                    <div class="feed-url-text"><a href="${feed.url}" title="${feed.url}" target="_blank">${feed.url}</a></div>
+                    <div class="icon deactivate-feed${boltClass}">
+                        <i class="fa fa-bolt"></i>
+                    </div>
                     <div class="icon remove-feed">
                         <i class="fa fa-times"></i>
                     </div>
@@ -525,11 +536,7 @@ FeedMeAnime.getSuggestions = async function () {
     for (let i = 0; i < pageState.suggestions.count; i = i + 20) {
         let results = await this.getPopular(i);
         _.forEach(results.data, (val) => {
-            if (pageState.suggestions.items) {
-                pageState.suggestions.items.push(val);
-            } else {
-                pageState.suggestions.items = [val];
-            }
+            pageState.suggestions.items.push(val);
         });
     }
 
@@ -560,15 +567,17 @@ FeedMeAnime.addThumbnail = async function (title, imageUrl) {
 }
 
 FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
+    var hashes = [];
     _.forEach(results, (val) => {
         let payoffCode = `<div class="output"><input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div></div>`;
+        var titleHash = CryptoJS.HmacSHA1(val["title"], "password").toString();
 
         if (pageState.settings.parseLinks) {
             if (!val["link"].includes('magnet:') && (val["link"].includes('www.') || val["link"].includes('http://') || val["link"].includes('https://'))) {
                 payoffCode = `<div class="output"><div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div></div>`;
             }
         }
-        var titleHash = CryptoJS.HmacSHA1(val["title"], "password").toString();
+        
         $("#main").append(`<div class="anime-block" id="${titleHash}">
                                     ${imgString}
                                     <div data-title="${val["title"]}" class="result">
@@ -576,19 +585,20 @@ FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
                                         <div class="anime-outputs">
                                             <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
                                             ${payoffCode}
-                                            </div>
+                                        </div>
                                     </div>
                                     <div class="viewed-overlay"></div>
                                     <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>
                                </div>`);
 
-       _.forEach(pageState.seenHashes, (val) => {
-            if (val == titleHash) {
-                FeedMeAnime.setAnimeSeen($(`#` + titleHash));
-
+       _.forEach(pageState.seenHashes, (val2) => {
+            if (val2 == titleHash) {
+                hashes.push(val2);
             }
         });
     });
+
+    return hashes;
 }
 
 FeedMeAnime.consolidateResults = async function(results, title, imgString, tagText) { 
@@ -639,6 +649,7 @@ FeedMeAnime.setAnimeSeen = function(animeBlock) {
     if (pageState.seenHashes.indexOf(animeBlock.attr('id')) == -1) {
         pageState.seenHashes.push(animeBlock.attr('id'));
     }
+    $("#main").append(animeBlock);
 }
 
 FeedMeAnime.unsetAnimeSeen = function(animeBlock) {
@@ -780,7 +791,7 @@ $(document).on('click', '.feed-expand', async function () {
                 $(feedContentContainer).append(`
                     <div class="feed-entry" data-item-title="${entry[feedTitleField]}" data-item-link="${entry[feedLinkField]}">
                         <div class="content-title" title="${entry[feedTitleField]}">${entry[feedTitleField]}</div>
-                        <div class="content-link"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
+                        <div class="content-link" title="${entry[feedLinkField]}"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
                         <div class="feed-add-anime" title="Add associated Anime"><i class="fas fa-thumbtack"></i></div>
                     </div>`);
             }
@@ -815,6 +826,22 @@ $(document).on('click', '.remove-feed', async function () {
     await FMA.clearCache();
 })
 
+$(document).on('click', '.deactivate-feed', async function () {
+    var feed = $(this).closest('.feed')
+    if (feed.attr('data-active') == 'true'){
+        $(this).removeClass('feed-active');
+        feed.attr('data-active', 'false');
+        pageState.rssFeeds.find( rss => rss.url === feed.data('feed-url')).active = false;
+    } else {
+        $(this).addClass('feed-active');
+        feed.attr('data-active', 'true');
+        pageState.rssFeeds.find( rss => rss.url === feed.data('feed-url')).active = true;
+    }
+
+    await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+    await FMA.clearCache();
+})
+
 $(document).on('click', '.remove-filter', async function () {
     delete pageState.filters[$(this).parent().find('.filter-feed').data('feed')];
     await FMA.storage.sync.setItem("cacheFilters", pageState.filters);
@@ -838,7 +865,7 @@ $(document).on('click', '#save-settings', async function () {
 })
 
 $(document).on('click', '.clipboard-title-copy', function () {
-    var copyText = $(this).closest('.results').find('.info-label')[0]
+    var copyText = $(this).closest('.result').find('.info-label')[0]
     copyText.select();
     document.execCommand("Copy");
 });

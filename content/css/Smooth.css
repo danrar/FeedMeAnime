@@ -276,6 +276,14 @@ Feed Management
 	padding: 10px 0;
 }
 
+#feed-info .feed .deactivate-feed {
+	color: #dcdcdc;
+}
+
+#feed-info .feed .feed-active {
+	color: #ceda30;
+}
+
 /*
 Settings
 */
