@@ -277,11 +277,11 @@ Feed Management
 }
 
 #feed-info .feed .deactivate-feed {
-	color: #dcdcdc;
+	color: #f94d4d;
 }
 
 #feed-info .feed .feed-active {
-	color: #ceda30;
+	color: #12dd38;
 }
 
 /*

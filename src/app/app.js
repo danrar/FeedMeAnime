@@ -419,7 +419,7 @@ FeedMeAnime.reloadFeeds = function () {
                     <div class="feed-title-text">${feed.title} -</div>
                     <div class="feed-url-text"><a href="${feed.url}" title="${feed.url}" target="_blank">${feed.url}</a></div>
                     <div class="icon deactivate-feed${boltClass}">
-                        <i class="fa fa-bolt"></i>
+                        <i class="fa fa-plug"></i>
                     </div>
                     <div class="icon remove-feed">
                         <i class="fa fa-times"></i>
