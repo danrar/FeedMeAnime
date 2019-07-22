@@ -81,7 +81,7 @@ Main Page
 	overflow: hidden;
 	padding: 8px 30px 8px 3px;
 	position: relative;
-	min-height: 150px;
+	min-height: 142px;
 }
 #main .anime-block .result{
 	padding: 0 0 10px 0;
@@ -202,14 +202,36 @@ Anime Management
 }
 
 
-#anime-info .change-nickname, #anime-info .change-label, #anime-info .remove-anime{
+#anime-info .change-nickname, #anime-info .change-label, #anime-info .remove-anime, #anime-info .archive-anime{
 	float: right;
 }
 
+#anime-controls {
+	width: 80%;
+    background: #2e50a11f;
+    padding: 15px 10px 30px 10px;
+    margin: 20px auto;
+}
+
+#anime-controls .text-input {
+	width: 150px;
+}
+
 #anime-controls #anime-add-icons {
-	font-size: 1.6em;
+	font-size: 12pt;
+	color: #fff;
+	font-weight: bold;
     float: right;
     cursor: pointer;
+    background-color: #2e51a1;
+    border-radius: 5px;
+    padding: 2px 7px 5px 5px;
+    margin-top: -10px;
+    margin-right: 13px;
+}
+
+#anime-controls #anime-add-icons svg{
+	color: #fff;
 }
 
 #anime-controls #anime-advanced-toggle {
@@ -244,6 +266,19 @@ Anime Suggestions
 
 #anime-suggestions {
 	clear: both;
+
+}
+
+#anime-suggestions .anime-suggestion {
+	width: 450px;
+}
+
+#anime-suggestions .suggestions-link {
+	height: 14px;
+    width: 28px;
+    float: right;
+    margin: -15px 3px 0 0;
+    cursor: pointer;
 }
 
 /*
@@ -272,8 +307,14 @@ Feed Management
 	height: 21px;
 }
 
-#feed-controls #feed-advanced-options{
+#feed-controls #feed-advanced-options {
 	padding: 10px 0;
+}
+
+#feed-info .feed .feed-title-text {
+	display: inline-block;
+	font-size: 12pt;
+	font-weight: bold;
 }
 
 #feed-info .feed .deactivate-feed {

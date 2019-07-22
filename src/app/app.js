@@ -38,6 +38,7 @@ const pageState = {
         items: []
     },
     seenHashes: [],
+    archivedObjects: [],
     filters: {},
     thumbnails: [],
     lastCacheTime: new Date(),
@@ -129,6 +130,16 @@ FeedMeAnime.initialize = async function () {
     const seenHashes = await this.storage.sync.getItem("seenHashes");
     if (seenHashes != null) {
         pageState.seenHashes = seenHashes;
+        if (pageState.seenHashes.length > 30)
+        {
+            var len = pageState.seenHashes.length - 30;
+            pageState.seenHashes.splice(0, len);
+        }
+    }
+
+    const archivedObjects = await this.storage.sync.getItem("archivedObjects");
+    if (archivedObjects != null) {
+        pageState.archivedObjects = archivedObjects;
     }
 
     const filters = await this.storage.sync.getItem("filters");
@@ -391,6 +402,9 @@ FeedMeAnime.reloadAnime = function () {
                     <div class="icon remove-anime" title="Delete">
                         <i class="fa fa-times"></i>
                     </div>
+                    <div class="icon archive-anime" title="Archive">
+                        <i class="fa fa-archive"></i>
+                    </div>
                     <div class="icon change-label" title="Change Label">
                         <i class="fa fa-tag"></i>
                     </div>
@@ -416,14 +430,17 @@ FeedMeAnime.reloadFeeds = function () {
             $("#feed-info").append(`
                 <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" data-feed-title-field="${feed.titleField}" data-feed-link-field="${feed.linkField}" data-active="${active}" class="feed">
                     <div class="feed-expand"><i class="fas fa-fw fa-caret-right"></i><i class="fas fa-fw fa-caret-down"></i></div>
-                    <div class="feed-title-text">${feed.title} -</div>
-                    <div class="feed-url-text"><a href="${feed.url}" title="${feed.url}" target="_blank">${feed.url}</a></div>
-                    <div class="icon deactivate-feed${boltClass}">
-                        <i class="fa fa-plug"></i>
-                    </div>
                     <div class="icon remove-feed">
                         <i class="fa fa-times"></i>
                     </div>
+                    <div class="icon archive-feed" title="Archive">
+                        <i class="fa fa-archive"></i>
+                    </div>
+                    <div class="icon deactivate-feed${boltClass}">
+                        <i class="fa fa-plug"></i>
+                    </div>
+                    <div class="feed-title-text">${feed.title}</div>
+                    <div class="feed-url-text"><span><a href="${feed.url}" title="${feed.url}" target="_blank">${feed.url}</a></span></div>
                 </div>
                 <div data-feed-title="${feed.title}" class="feed-contents">
                 </div>
@@ -498,6 +515,7 @@ FeedMeAnime.loadSuggestions = async function () {
                 <div data-title="${val.attributes["canonicalTitle"]}" data-imageurl="${_.get(val, "attributes.posterImage.tiny")}" class="anime-suggestion">
                     ${val.attributes["canonicalTitle"]}
                 </div>
+                <a class="js-dyna-link" data-link="https://myanimelist.net/search/all?q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/mal.png" class="suggestions-link"></a>
             `);
         }
         i++;
@@ -511,7 +529,7 @@ FeedMeAnime.loadSuggestions = async function () {
 
 FeedMeAnime.updateFeedContents = async function (feedTitle = null) {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
-        if (feedTitle == null || pageState.rssFeeds[i].title == feedTitle) {
+        if ((feedTitle == null || pageState.rssFeeds[i].title == feedTitle) && pageState.rssFeeds[i].active ){
             const feed = await this.getRss(pageState.rssFeeds[i]);
             if (feed != null) {
                 var objects = _.get(feed, "rss.channel.item");
@@ -679,6 +697,23 @@ FeedMeAnime.getDataUri = function (url, callback) {
     }
 }
 
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
+
+const archive = (field, type, values) => {
+    pageState.archivedObjects[type] = values;
+}
+
+
 window.FMA = FeedMeAnime;
 
 /**
@@ -816,12 +851,40 @@ $(document).on('click', '.remove-anime', async function () {
     await FMA.clearCache();
 })
 
+$(document).on('click', '.archive-anime', async function () {
+    var index = $(this).parent().data('index');
+
+    if (index > -1) {
+        archive('anime', 'anime', pageState.anime[index]);
+        pageState.anime.splice(index, 1);
+    }
+
+    await FMA.storage.sync.setItem("animeList", pageState.anime);
+    await FMA.storage.sync.setItem("archivedObjects", pageState.archivedObjects);
+    await FMA.reloadAnime();
+    await FMA.clearCache();
+})
+
 $(document).on('click', '.remove-feed', async function () {
     var index = $(this).parent().data('index');
     if (index > -1) {
         pageState.rssFeeds.splice(index, 1);
     }
+
     await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+    await FMA.reloadFeeds();
+    await FMA.clearCache();
+})
+
+$(document).on('click', '.archive-feed', async function () {
+    var index = $(this).parent().data('index');
+    if (index > -1) {
+        archive('feed', 'feed', pageState.rssFeeds[index]);
+        pageState.rssFeeds.splice(index, 1);
+    }
+
+    await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+    await FMA.storage.sync.setItem("archivedObjects", pageState.archivedObjects);
     await FMA.reloadFeeds();
     await FMA.clearCache();
 })
@@ -889,6 +952,10 @@ $(document).on('click', '.anime-seen', async function () {
 
     await FMA.storage.sync.setItem("seenHashes", pageState.seenHashes);
 });
+
+$(document).on('click', '.js-dyna-link', async function() {
+    chrome.tabs.create({ url: $(this).attr('data-link') });
+})
 
 $(document).on('click', '#clear-cache', async function () {
     await FMA.clearCache();
