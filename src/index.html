@@ -39,6 +39,23 @@
       <div id="feed-info" class="content"></div>
       <div id="settings" class="content">
         <div id="settings-title">Settings</div>
+        <div class="storage-stats">
+          <div class="setting-option">
+            <span>Sync'd Storage</span>
+            <div id="storage-sync-text"></div>
+          </div>
+          <div class="setting-option">
+            <span>Local Storage</span>
+            <div id="storage-local-text"></div>
+          </div>
+          <div class="setting-option clear-storage">
+            <span>Clear Storage</span>
+            <div class="icon" id="clear-storage">
+              <i class="fa fa-eraser"></i>
+            </div>
+          </div>
+        </div>
+
         <div class="setting-option">
           <span>Theme</span>
           <select id="themes-select"></select>
@@ -59,23 +76,9 @@
           <span>Filters</span>
           <div id="filter-configuration"></div>
         </div>
-        <div class="storage-stats">
-          <div class="setting-option">
-            <span>Sync'd Storage</span>
-            <div id="storage-sync-text"></div>
-          </div>
-          <div class="setting-option">
-            <span>Local Storage</span>
-            <div id="storage-local-text"></div>
-          </div>
-        </div>
+        
 
-        <div class="setting-option">
-          <span>Clear Storage</span>
-          <div class="icon" id="clear-storage">
-            <i class="fa fa-eraser"></i>
-          </div>
-        </div>
+        
         <div class="icon" id="save-settings" title="Save Settings">
           <i class="fa fa-save"></i>
         </div>
@@ -133,6 +136,53 @@
       <div id="anime-suggestions" class="content">
         <div id="anime-suggestions-title">Suggestions</div>
         <div id="anime-suggestions-options"></div>
+      </div>
+    </div>
+
+    <div id="tutorial">
+      <div id="tut-main-list" data-section-number="1">
+        <div id="tut-main-list-step-1" data-step="1">
+          This is your main list. <br />
+          It lists all the RSS feed items you are interested in. <br />
+          Updating your Animes and Feeds changes what will be displayed here.
+        </div>
+        <div id="tut-main-list-step-2" data-step="2">
+          Customise your list or leave it as is. <br />
+          All the information you need is quick to access. <br />
+        </div>
+        <div id="tut-main-list-step-3" data-step="3">
+          Hide episodes once you have watched them!
+        </div>
+        <div id="tut-main-list-step-4" data-step="4">
+          For other display types, change the display options in the Settings menu.
+        </div>
+      </div>
+      <div id="tut-add-anime" data-section-number="2">
+        <div id="tut-add-anime-step-1" data-step="1">
+          Here you chose which Anime you are interested in. <br />
+          Start entering the name of an Anime you want to follow and then select it from the prepopulation list.
+        </div>
+        <div id="tut-add-anime-step-2" data-step="2">
+          Or take one of our Suggestions <br />
+          Based on the 50 most popular Anime at this moment in time!
+        </div>
+        <div id="tut-add-anime-step-3" data-step="3">
+          Clear out your Anime season to season or when they finish running to keep a smart, managable collection.
+        </div>
+      </div>
+      <div id="tut-add-feed" data-section-number="3">
+        <div id="tut-add-feed-step-1">
+          
+        </div>
+      </div>
+      <div id="tut-settings" data-section-number="4">
+        <div id="tut-settings-step-1">
+          
+        </div>
+      </div>
+      <div id="tutorial-controls">
+        Skip <br/>
+        Next <br />
       </div>
     </div>
 

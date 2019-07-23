@@ -344,7 +344,7 @@ FeedMeAnime.clearStorage = async function () {
 FeedMeAnime.getPopular = async function (offset) {
     try {
         const res = await $.ajax({
-            url: `https://kitsu.io/api/edge/anime?filter[status]=current&filter[subtype]=TV&page[limit]=20&page[offset]=${offset}&sort=popularityRank&fields[anime]=canonicalTitle,posterImage`,
+            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=false&rssUrl=https://kitsu.io/api/edge/anime?filter[status]=current&filter[subtype]=TV&page[limit]=20&page[offset]=${offset}&sort=popularityRank&fields[anime]=canonicalTitle,posterImage`,
             cache: false,
             dataType: "json"
         });
@@ -358,7 +358,7 @@ FeedMeAnime.getPopular = async function (offset) {
 FeedMeAnime.getAnimeDetails = async function (searchText) {
     try {
         const res = await $.ajax({
-            url: `https://kitsu.io/api/edge/anime?filter[text]=${searchText}&page[limit]=1&fields[anime]=canonicalTitle,posterImage`,
+            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=false&rssUrl=https://kitsu.io/api/edge/anime?filter[text]=${searchText}&page[limit]=1&fields[anime]=canonicalTitle,posterImage`,
             cache: false,
             dataType: "json"
         });
@@ -429,15 +429,15 @@ FeedMeAnime.reloadFeeds = function () {
             var boltClass= active ? ` feed-active` : ``;
             $("#feed-info").append(`
                 <div data-index="${i}" data-feed-title="${feed.title}" data-feed-url="${feed.url}" data-feed-title-field="${feed.titleField}" data-feed-link-field="${feed.linkField}" data-active="${active}" class="feed">
-                    <div class="feed-expand"><i class="fas fa-fw fa-caret-right"></i><i class="fas fa-fw fa-caret-down"></i></div>
+                    <div class="feed-expand"><i class="fas fa-fw fa-caret-right fa-2x"></i><i class="fas fa-fw fa-caret-down fa-2x"></i></div>
                     <div class="icon remove-feed">
-                        <i class="fa fa-times"></i>
+                        <i class="fa fa-times fa-lg"></i>
                     </div>
                     <div class="icon archive-feed" title="Archive">
-                        <i class="fa fa-archive"></i>
+                        <i class="fa fa-archive fa-lg"></i>
                     </div>
                     <div class="icon deactivate-feed${boltClass}">
-                        <i class="fa fa-plug"></i>
+                        <i class="fa fa-plug fa-lg"></i>
                     </div>
                     <div class="feed-title-text">${feed.title}</div>
                     <div class="feed-url-text"><span><a href="${feed.url}" title="${feed.url}" target="_blank">${feed.url}</a></span></div>
@@ -527,9 +527,9 @@ FeedMeAnime.loadSuggestions = async function () {
     });
 }
 
-FeedMeAnime.updateFeedContents = async function (feedTitle = null) {
+FeedMeAnime.updateFeedContents = async function (feedTitle = null, override = false) {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
-        if ((feedTitle == null || pageState.rssFeeds[i].title == feedTitle) && pageState.rssFeeds[i].active ){
+        if ((feedTitle == null || pageState.rssFeeds[i].title == feedTitle) && (pageState.rssFeeds[i].active || override) ){
             const feed = await this.getRss(pageState.rssFeeds[i]);
             if (feed != null) {
                 var objects = _.get(feed, "rss.channel.item");
@@ -796,49 +796,61 @@ $(document).on('click', '.toggle', function () {
 })
 
 $(document).on('click', '.feed-expand', async function () {
-    $('.feed-expand').each(function () {
+    if(!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false'){
+        if($(this).parent().data('feed-title') != $(`.feed-expand[data-toggled='true']`).parent().data('feed-title')) {
+            $('.feed-expand').each(function () {
+        
+                let targetFeed = $(this).parent();
+                let feedTitle = targetFeed.data('feed-title');
+                let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
+                $(this).attr('data-toggled', 'false');
+                $(this).find('.fa-caret-down').hide();
+                $(this).find('.fa-caret-right').show();
+                $(feedContentContainer).slideUp();
+            })
+        }
+
 
         let targetFeed = $(this).parent();
         let feedTitle = targetFeed.data('feed-title');
+        let feedTitleField = targetFeed.data('feed-title-field');
+        let feedLinkField = targetFeed.data('feed-link-field');
         let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
-        $(this).attr('data-toggled', 'false');
-        $(this).find('.fa-caret-down').hide();
-        $(this).find('.fa-caret-right').show();
-        $(feedContentContainer).slideUp();
-    })
 
-    let targetFeed = $(this).parent();
-    let feedTitle = targetFeed.data('feed-title');
-    let feedTitleField = targetFeed.data('feed-title-field');
-    let feedLinkField = targetFeed.data('feed-link-field');
-    let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
-
-    if (!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false') {
-
-        if (FMA.getObjects(pageState.rssContents, 'title', feedTitle).length == 0) {
-            await FMA.updateFeedContents(feedTitle);
-        }
-
-        let feed = FMA.getObjects(pageState.rssContents, 'title', feedTitle)[0];
-        if ($(feedContentContainer).html()) {
-            for (let i = 0; i < feed.contents.length; i++) {
-                var entry = feed.contents[i];
-                $(feedContentContainer).append(`
-                    <div class="feed-entry" data-item-title="${entry[feedTitleField]}" data-item-link="${entry[feedLinkField]}">
-                        <div class="content-title" title="${entry[feedTitleField]}">${entry[feedTitleField]}</div>
-                        <div class="content-link" title="${entry[feedLinkField]}"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
-                        <div class="feed-add-anime" title="Add associated Anime"><i class="fas fa-thumbtack"></i></div>
-                    </div>`);
+        if (!$(this).attr('data-toggled') || $(this).attr('data-toggled') == 'false')  {
+            let storeHtml = $(this).html();
+            $(this).html('<i class="fa fa-circle-notch fa-spin fa-lg"></i>');
+            if (FMA.getObjects(pageState.rssContents, 'title', feedTitle).length == 0) {
+                await FMA.updateFeedContents(feedTitle, true);
             }
-        }
-        $(feedContentContainer).delay(200).slideDown();
+
+            let feed = FMA.getObjects(pageState.rssContents, 'title', feedTitle)[0];
+            if ($(feedContentContainer).html()) {
+                for (let i = 0; i < feed.contents.length; i++) {
+                    var entry = feed.contents[i];
+                    $(feedContentContainer).append(`
+                        <div class="feed-entry" data-item-title="${entry[feedTitleField]}" data-item-link="${entry[feedLinkField]}">
+                            <div class="content-title" title="${entry[feedTitleField]}">${entry[feedTitleField]}</div>
+                            <div class="content-link" title="${entry[feedLinkField]}"><input type="text" class="info-link" value="${entry[feedLinkField]}"></div>
+                            <div class="feed-add-anime" title="Add associated Anime"><i class="fas fa-thumbtack"></i></div>
+                        </div>`);
+                }
+            }
+            $(this).html(storeHtml);
+            
+        } 
+        $(feedContentContainer).slideDown();
         $(this).attr('data-toggled', 'true');
+
+        $(this).children('.fa-fw').toggle();
     } else {
+        let targetFeed = $(this).parent();
+        let feedTitle = targetFeed.data('feed-title');
+        let feedContentContainer = $(`.feed-contents[data-feed-title='${feedTitle}']`)[0];
         $(feedContentContainer).slideUp();
         $(this).attr('data-toggled', 'false');
+        $(this).children('.fa-fw').toggle();
     }
-
-    $(this).children('.fa-fw').toggle();
 })
 
 $(document).on('click', '.remove-anime', async function () {

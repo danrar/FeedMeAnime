@@ -145,17 +145,6 @@
 .feed {
 	line-height: 20px;
 	font-size: 14px;
-
-}
-
-.feed-expand {
-	float: left;
-}
-
-.feed-contents {
-	max-height: 200px;
-    overflow: auto;
-    width: 500px;
 }
 
 .feed-entry {
