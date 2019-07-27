@@ -344,7 +344,7 @@ FeedMeAnime.clearStorage = async function () {
 FeedMeAnime.getPopular = async function (offset) {
     try {
         const res = await $.ajax({
-            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=false&rssUrl=https://kitsu.io/api/edge/anime?filter[status]=current&filter[subtype]=TV&page[limit]=20&page[offset]=${offset}&sort=popularityRank&fields[anime]=canonicalTitle,posterImage`,
+            url: `https://kitsu.io/api/edge/anime?filter[status]=current&filter[subtype]=TV&page[limit]=20&page[offset]=${offset}&sort=popularityRank&fields[anime]=canonicalTitle,posterImage`,
             cache: false,
             dataType: "json"
         });
@@ -358,7 +358,7 @@ FeedMeAnime.getPopular = async function (offset) {
 FeedMeAnime.getAnimeDetails = async function (searchText) {
     try {
         const res = await $.ajax({
-            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=false&rssUrl=https://kitsu.io/api/edge/anime?filter[text]=${searchText}&page[limit]=1&fields[anime]=canonicalTitle,posterImage`,
+            url: `https://kitsu.io/api/edge/anime?filter[text]=${searchText}&page[limit]=1&fields[anime]=canonicalTitle,posterImage`,
             cache: false,
             dataType: "json"
         });

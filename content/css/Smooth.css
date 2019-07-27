@@ -225,9 +225,10 @@ Anime Management
     cursor: pointer;
     background-color: #2e51a1;
     border-radius: 5px;
-    padding: 2px 7px 5px 5px;
+    padding: 2px 5px 4px 5px;
     margin-top: -10px;
     margin-right: 13px;
+    border: 1px solid #000;
 }
 
 #anime-controls #anime-add-icons svg{
@@ -320,6 +321,12 @@ Feed Management
 	font-size: 1.6em;
     float: right;
     cursor: pointer;
+    background-color: #2e51a2;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    font-weight: bold;
+    border: 1px solid #000;
 }
 
 #feed-controls #feed-advanced-toggle {
