@@ -227,7 +227,7 @@ Anime Management
     border-radius: 5px;
     padding: 2px 5px 4px 5px;
     margin-top: -10px;
-    margin-right: 13px;
+    margin-right: 7px;
     border: 1px solid #000;
 }
 
@@ -277,8 +277,14 @@ Anime Suggestions
 	height: 14px;
     width: 28px;
     float: right;
-    margin: -15px 3px 0 0;
+    margin: 0 3px 0 0;
     cursor: pointer;
+}
+
+#anime-suggestions .feed-compare {
+	float: right;
+	color: #2e51a1;
+    margin: -5px 3px;
 }
 
 /*
@@ -438,6 +444,15 @@ Tutorial
 #tutorial {
 	display: none;
 }
+
+/*
+Adhoc Modal
+*/
+
+#adhoc-modal {
+	display: none;
+}
+
 
 /*
 Error Dialog

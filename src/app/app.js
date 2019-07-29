@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import * as slugify from "slugify";
 import * as forage from "localforage";
 import * as CryptoJS from "crypto-js";
+import * as fuzzyset from "fuzzyset.js";
 import { Logger } from "./logger";
 import { chromeStorageSyncDriver } from "./drivers/sync.driver";
 import { chromeStorageLocalDriver } from "./drivers/local.driver";
@@ -48,7 +49,8 @@ const pageState = {
         labelAsTag: false,
         parseLinks: false,
         consolidateResults: false 
-    }
+    },
+    feedFuzzyset: null
     //To Add
     //setting remove duplicates
     //setting infohash to magnet link
@@ -178,6 +180,8 @@ FeedMeAnime.initialize = async function () {
         pageState.suggestions.items = [];
         await this.getSuggestions();
     }
+
+    pageState.feedFuzzyset = FuzzySet();
 }
 
 FeedMeAnime.getRss = async function (feed, skipCache = false) {
@@ -512,11 +516,12 @@ FeedMeAnime.loadSuggestions = async function () {
     _.forEach(pageState.suggestions.items, (val) => {
         if (i < pageState.suggestions.display) {
             $("#anime-suggestions-options").append(`
+                <a class="js-dyna-link" data-link="https://myanimelist.net/search/all?q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/mal.png" class="suggestions-link"></a>
+                <div class="feed-compare" data-title="${val.attributes["canonicalTitle"]}"><i class="fa fa-ellipsis-h fa-2x"></i></div>
                 <div data-title="${val.attributes["canonicalTitle"]}" data-imageurl="${_.get(val, "attributes.posterImage.tiny")}" class="anime-suggestion">
                     ${val.attributes["canonicalTitle"]}
                 </div>
-                <a class="js-dyna-link" data-link="https://myanimelist.net/search/all?q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/mal.png" class="suggestions-link"></a>
-            `);
+                `);
         }
         i++;
     });
@@ -541,11 +546,75 @@ FeedMeAnime.updateFeedContents = async function (feedTitle = null, override = fa
                 if (pageState.rssContents) {
                     if (this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1) {
                         pageState.rssContents.push({ title: pageState.rssFeeds[i].title, contents: objects });
+
+                        //let feed = this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0];
+                        //_.forEach(feed.Contents, (val) => { 
+                        //    pageState.feedFuzzyset.add(val[pageState.rssFeeds[i].titleField]);
+                        //});
                     }
                 } else {
                     pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
+                }  
+            }
+        }
+    }
+}
+
+FeedMeAnime.loadFuzzyFeedStrings = async function () {
+    for (var i = 0; i < pageState.rssFeeds.length; i++) {
+        if (pageState.rssFeeds[i].active){
+            let feed = this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0];
+
+            let wordBreakdown = [];
+            let finalSkipWords = [];
+            let first = feed.contents[0][pageState.rssFeeds[i].titleField];
+            let firstSplit = null;
+            let splitChars = [" ", "_", "-"];
+            let bestSplit = {char: null, splits: 0, results: null};
+            let checkPercent = 0.5;
+            let cutPercent = 0.7;
+            let setSize = feed.contents.length;
+
+            _.forEach(splitChars, (char) => {
+                let results = first.split(char);
+                let length = results.length;
+                if (length > 1 && length > bestSplit.splits) {
+                    bestSplit = {char: char, splits: length, results: results};
+                }
+            });
+
+            _.forEach(bestSplit.results, (split) => { 
+                if(wordBreakdown.filter(function(object){return object.word === split}).length == 0){
+                    wordBreakdown.push({
+                       word: split,
+                       frequency: 0
+                    });
+                }
+            });
+
+            let size = Math.round(setSize * checkPercent);
+
+            _.forEach(feed.contents, (entry) => {
+                _.forEach(entry[pageState.rssFeeds[i].titleField].split(bestSplit.char), (val) => {
+                    if(wordBreakdown.filter(function(object){return object.word === val}).length > 0){
+                        wordBreakdown.find(word => word.word === val).frequency++;
+                    }
+                });
+            });
+
+            for (var j = 0; j < wordBreakdown.length; j++) {
+                if(wordBreakdown[j].frequency > Math.round(size * cutPercent)) {
+                    finalSkipWords.push(wordBreakdown[j]); 
                 }
             }
+
+            _.forEach(feed.contents, (val) => { 
+                let phrase = val[pageState.rssFeeds[i].titleField];          
+                _.forEach(finalSkipWords, (word) => {
+                    phrase = phrase.replace(word.word, '');
+                });
+                pageState.feedFuzzyset.add(phrase);
+            });
         }
     }
 }
@@ -1082,6 +1151,27 @@ $(document).on('click', '.anime-suggestion', async function () {
     });
 });
 
+$(document).on('click', '.feed-compare', async function () {
+    if(pageState.feedFuzzyset.length() == 0)
+    {
+        await FMA.updateFeedContents();
+        await FMA.loadFuzzyFeedStrings();
+    }
+
+    let title = $(this).data('title');
+    let modal = $('#adhoc-modal');
+    let results = pageState.feedFuzzyset.get(title);
+
+    if ($(modal).html() && results != null) {
+        $(modal).append(`${results}`);
+    } else {
+        $(modal).append(`We don't detect any Anime with this title currently within your active feeds. <br />
+            Would you like to add this Anime anyway?`);
+    }
+
+    $(modal).show();
+});
+
 $(document).on('click', '.feed-add-anime', async function () {
     let itemTitle = $(this).parent().data('item-title');
     let thumbnailUrl;
@@ -1219,5 +1309,3 @@ $(document).on('click', '#main-refresh-icon', async function () {
 $(function () {
     FeedMeAnime.initialize();
 });
-
-
