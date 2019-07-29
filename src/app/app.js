@@ -1172,6 +1172,13 @@ $(document).on('click', '.feed-compare', async function () {
     $(modal).show();
 });
 
+$(document).on('click', '#adhoc-modal-close', async function () { 
+    let modal = $('#adhoc-modal');
+    $(modal).html('');
+    $(modal).hide();
+
+});
+
 $(document).on('click', '.feed-add-anime', async function () {
     let itemTitle = $(this).parent().data('item-title');
     let thumbnailUrl;

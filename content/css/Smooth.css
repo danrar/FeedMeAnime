@@ -449,8 +449,19 @@ Tutorial
 Adhoc Modal
 */
 
+#adhoc-modal-wrapper {
+	position: relative;
+}
+
 #adhoc-modal {
 	display: none;
+	position: absolute;
+    top: -400px;
+    left: 25%;
+    background-color: #fff;
+    height: 200px;
+    width: 200px;
+    border: 1px solid #000;
 }
 
 
