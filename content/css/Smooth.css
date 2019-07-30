@@ -209,7 +209,7 @@ Anime Management
 #anime-controls {
 	width: 80%;
     background: #2e50a11f;
-    padding: 15px 10px 30px 10px;
+    padding: 20px 10px 20px 10px;
     margin: 20px auto;
 }
 
@@ -226,7 +226,7 @@ Anime Management
     background-color: #2e51a1;
     border-radius: 5px;
     padding: 2px 5px 4px 5px;
-    margin-top: -10px;
+    margin-top: -5px;
     margin-right: 7px;
     border: 1px solid #000;
 }
@@ -323,8 +323,20 @@ Feed Management
 	font-size: 16pt;
 }
 
+#feed-controls {
+	background-color: #2e50a11f;
+    margin: 10px auto;
+    padding: 20px 10px;
+    border-radius: 5px;
+    width: 85%;
+}
+
+#feed-controls input {
+	width: 150px;
+}
+
 #feed-controls #feed-add-icons {
-	font-size: 1.6em;
+	font-size: 1.2em;
     float: right;
     cursor: pointer;
     background-color: #2e51a2;
@@ -333,6 +345,7 @@ Feed Management
     border-radius: 5px;
     font-weight: bold;
     border: 1px solid #000;
+    margin: -5px 10px 0 0;
 }
 
 #feed-controls #feed-advanced-toggle {
@@ -346,7 +359,7 @@ Feed Management
 }
 
 #feed-controls #feed-advanced-options {
-	padding: 10px 0;
+	padding: 10px 0 0 0;
 }
 
 .feed-expand {

@@ -48,7 +48,8 @@ const pageState = {
         theme: "Smooth",
         labelAsTag: false,
         parseLinks: false,
-        consolidateResults: false 
+        consolidateResults: false,
+        advanced: false
     },
     feedFuzzyset: null
     //To Add
@@ -179,6 +180,11 @@ FeedMeAnime.initialize = async function () {
         await this.sync();
         pageState.suggestions.items = [];
         await this.getSuggestions();
+    }
+
+    if(pageState.settings.advanced) {
+        $('#anime-advanced-options').show();
+        $('#feed-advanced-options').show();
     }
 
     pageState.feedFuzzyset = FuzzySet();
@@ -1160,12 +1166,13 @@ $(document).on('click', '.feed-compare', async function () {
 
     let title = $(this).data('title');
     let modal = $('#adhoc-modal');
+    let content = $('#adhoc-modal-content');
     let results = pageState.feedFuzzyset.get(title);
 
-    if ($(modal).html() && results != null) {
-        $(modal).append(`${results}`);
+    if ($(content).html() && results != null) {
+        $(content).append(`${results}`);
     } else {
-        $(modal).append(`We don't detect any Anime with this title currently within your active feeds. <br />
+        $(content).append(`We don't detect any Anime with this title currently within your active feeds. <br />
             Would you like to add this Anime anyway?`);
     }
 
@@ -1174,7 +1181,8 @@ $(document).on('click', '.feed-compare', async function () {
 
 $(document).on('click', '#adhoc-modal-close', async function () { 
     let modal = $('#adhoc-modal');
-    $(modal).html('');
+    let content = $('#adhoc-modal-content');
+    $(content).html('');
     $(modal).hide();
 
 });
