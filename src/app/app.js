@@ -491,10 +491,12 @@ FeedMeAnime.reloadFilters = function () {
 
 FeedMeAnime.reloadStorageStats = function () {
     chrome.storage.sync.getBytesInUse(null, function (data) {
+        $('#sync-storage-bar').css('width', (data / chrome.storage.sync.QUOTA_BYTES) * 100 + '%');
         $("#storage-sync-text").html(`${data} / ${chrome.storage.sync.QUOTA_BYTES}`);
     });
 
     chrome.storage.local.getBytesInUse(null, function (data) {
+        $('#local-storage-bar').css('width', ((data / chrome.storage.local.QUOTA_BYTES) * 100) + '%');
         $("#storage-local-text").html(`${data} / ${chrome.storage.local.QUOTA_BYTES}`);
     });
 }
@@ -847,6 +849,7 @@ $('#change-settings').click(function () {
         $('.active-tab').removeClass('active-tab');
         $('#change-settings').addClass('active-tab');
         $('.content').hide();
+        $('#sync-storage-bar').width('%');
         $('#settings').show();
         $('#overlay').animate({ opacity: 0 }, 500, function () {
             $('#overlay').hide();
