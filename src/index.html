@@ -64,34 +64,38 @@
             <span>Local Storage</span>
             <div id="storage-local-text"></div>
           </div>
-         
         </div>
 
-        <div class="setting-option">
-          <span>Theme</span>
-          <select id="themes-select"></select>
+        <div class="settings-grid">
+          <div class="setting-option">
+            <span>Theme</span>
+            <select id="themes-select"></select>
+          </div>
+          <div class="setting-option">
+            <span>Use label for Tag text </span>
+            <input type="checkbox" id="label-tag-checkbox" />
+          </div>
+          <div class="setting-option">
+            <span>Create links from URL fields </span>
+            <input type="checkbox" id="parse-links-checkbox" />
+          </div>
+          <div class="setting-option">
+            <span>Consolidate multiple results </span>
+            <input type="checkbox" id="consolidate-results-checkbox" />
+          </div>
         </div>
-        <div class="setting-option">
-          <span>Use label for Tag text </span>
-          <input type="checkbox" id="label-tag-checkbox" />
-        </div>
-        <div class="setting-option">
-          <span>Create links from URL fields </span>
-          <input type="checkbox" id="parse-links-checkbox" />
-        </div>
-        <div class="setting-option">
-          <span>Consolidate multiple results </span>
-          <input type="checkbox" id="consolidate-results-checkbox" />
-        </div>
-        <div class="setting-option">
+        <div class="setting-option-filters">
           <span>Filters</span>
           <div id="filter-configuration"></div>
         </div>
-        
-
+        <div class="setting-options-archive">
+          <div id="archive-list">
+          </div>
+        </div>
         
         <div class="icon" id="save-settings" title="Save Settings">
-          <i class="fa fa-save"></i>
+          Save
+          <i class="fa fa-save fa-sm"></i>
         </div>
       </div>
 

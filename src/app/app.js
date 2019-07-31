@@ -501,6 +501,19 @@ FeedMeAnime.reloadStorageStats = function () {
     });
 }
 
+FeedMeAnime.reloadArchivedObjects = function () {
+    $('#archive-list').html(``);
+    let archiveHtml = "";
+    if(pageState.archivedObjects.length > 0){
+        _.forEach(pageState.archivedObjects, (object) => {
+            archiveHtml = archiveHtml + `<div class="archive-object">${object}<div class="archive-return-button"></div></div>`;
+        });
+    } else {
+        archiveHtml = "No archived items";
+    }
+    $('#archive-list').html(`${archiveHtml}`);
+}
+
 FeedMeAnime.reloadMain = function () {
     $('#overlay').show();
     $('#overlay').animate({
@@ -846,6 +859,7 @@ $('#change-settings').click(function () {
     }, 500, async function () {
         await FMA.reloadFilters();
         await FMA.reloadStorageStats();
+        await FMA.reloadArchivedObjects();
         $('.active-tab').removeClass('active-tab');
         $('#change-settings').addClass('active-tab');
         $('.content').hide();
@@ -887,7 +901,6 @@ $(document).on('click', '.feed-expand', async function () {
                 $(feedContentContainer).slideUp();
             })
         }
-
 
         let targetFeed = $(this).parent();
         let feedTitle = targetFeed.data('feed-title');
