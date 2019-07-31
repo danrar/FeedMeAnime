@@ -495,9 +495,9 @@ Settings
 }
 
 #settings #settings-title {
-	padding-top: 5px;
+	padding: 5px 0 10px 0;
 	font-weight: bold;
-	font-size: 14pt;
+	font-size: 16pt;
 }
 
 #settings #themes-select {
