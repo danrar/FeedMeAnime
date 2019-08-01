@@ -538,11 +538,9 @@ FeedMeAnime.loadSuggestions = async function () {
         if (i < pageState.suggestions.display) {
             $("#anime-suggestions-options").append(`
                 <a class="js-dyna-link" data-link="https://myanimelist.net/search/all?q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/mal.png" class="suggestions-link"></a>
-                <div class="feed-compare" data-title="${val.attributes["canonicalTitle"]}"><i class="fa fa-ellipsis-h fa-2x"></i></div>
                 <div data-title="${val.attributes["canonicalTitle"]}" data-imageurl="${_.get(val, "attributes.posterImage.tiny")}" class="anime-suggestion">
                     ${val.attributes["canonicalTitle"]}
-                </div>
-                `);
+                </div>`);
         }
         i++;
     });
@@ -590,10 +588,11 @@ FeedMeAnime.loadFuzzyFeedStrings = async function () {
             let finalSkipWords = [];
             let first = feed.contents[0][pageState.rssFeeds[i].titleField];
             let firstSplit = null;
-            let splitChars = [" ", "_", "-"];
+            let splitChars = [" ", "_"];
+            let alwaysInclude = ["-"];
             let bestSplit = {char: null, splits: 0, results: null};
             let checkPercent = 0.5;
-            let cutPercent = 0.7;
+            let cutPercent = 0.9;
             let setSize = feed.contents.length;
 
             _.forEach(splitChars, (char) => {
@@ -624,7 +623,7 @@ FeedMeAnime.loadFuzzyFeedStrings = async function () {
             });
 
             for (var j = 0; j < wordBreakdown.length; j++) {
-                if(wordBreakdown[j].frequency > Math.round(size * cutPercent)) {
+                if(wordBreakdown[j].frequency > Math.round(size * cutPercent) && !alwaysInclude.includes(wordBreakdown[j].word)) {
                     finalSkipWords.push(wordBreakdown[j]); 
                 }
             }
@@ -677,7 +676,7 @@ FeedMeAnime.addThumbnail = async function (title, imageUrl) {
 FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
     var hashes = [];
     _.forEach(results, (val) => {
-        let payoffCode = `<div class="output"><input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Highlight"><i class="fa fa-copy"></i></div></div>`;
+        let payoffCode = `<div class="output"><input type="text" class="info-link" value="${val["link"]}"><div class="icon clipboard-magnet-copy" title="Copy to Clipboard"><i class="fa fa-copy"></i></div></div>`;
         var titleHash = CryptoJS.HmacSHA1(val["title"], "password").toString();
 
         if (pageState.settings.parseLinks) {
@@ -691,7 +690,7 @@ FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
                                     <div data-title="${val["title"]}" class="result">
                                         <div class="info-title">${val["title"]}</div>
                                         <div class="anime-outputs">
-                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Highlight"><i class="fa fa-copy"></i></div>
+                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Copy to Clipboard"><i class="fa fa-copy"></i></div>
                                             ${payoffCode}
                                         </div>
                                     </div>
@@ -1147,7 +1146,7 @@ $(document).on('click', '#feed-add-icons', async function () {
 
 });
 
-$(document).on('click', '.anime-suggestion', async function () {
+$(document).on('click', '.anime-suggestion-result', async function () {
     let title = $(this).data('title');
     let thumbUrl = $(this).data('imageurl');
     let nickname = prompt("Give " + title + " a nickname? (Leave blank for no nickname)");
@@ -1173,7 +1172,7 @@ $(document).on('click', '.anime-suggestion', async function () {
     });
 });
 
-$(document).on('click', '.feed-compare', async function () {
+$(document).on('click', '.anime-suggestion', async function () {
     if(pageState.feedFuzzyset.length() == 0)
     {
         await FMA.updateFeedContents();
@@ -1181,16 +1180,30 @@ $(document).on('click', '.feed-compare', async function () {
     }
 
     let title = $(this).data('title');
+    let thumbUrl = $(this).data('imageurl');
     let modal = $('#adhoc-modal');
     let content = $('#adhoc-modal-content');
     let results = pageState.feedFuzzyset.get(title);
-
+    $(modal).addClass('suggestions-modal');
+    $(content).append(`<div class="suggestion-modal-title">${title}</div><div class="suggestion-modal-content">`);
     if ($(content).html() && results != null) {
-        $(content).append(`${results}`);
+        $(content).append(`Here are the results in your feed that we think match this title.<br />`);
+        _.forEach(results, (result) => { 
+            if(result[0] > 0.3){
+                result[1] = result[1].trim().replace(/\d+$/, "").trim().replace(/\-$/, '').trim();
+                $(content).append(`<div class="anime-suggestion-result" data-title="${result[1]}" data-imageurl="${thumbUrl}">${result[1]} <div class="suggestion-add-button">Add</div></div>`);
+            }
+        });
     } else {
         $(content).append(`We don't detect any Anime with this title currently within your active feeds. <br />
-            Would you like to add this Anime anyway?`);
+            This may be due to the title being a different language or containing large differences than this suggestion.<br />
+            Or, there's just not any results for it in any of your feeds.<br />
+            Would you like to add this Anime anyway?
+            <div class="anime-suggestion-result" data-title="${title}" data-imageurl="${thumbUrl}">Add</div>`);
     }
+    $(content).append(`</div>`);
+
+    $('#overlay').show();
 
     $(modal).show();
 });
@@ -1199,6 +1212,7 @@ $(document).on('click', '#adhoc-modal-close', async function () {
     let modal = $('#adhoc-modal');
     let content = $('#adhoc-modal-content');
     $(content).html('');
+    $('#overlay').hide();
     $(modal).hide();
 
 });
