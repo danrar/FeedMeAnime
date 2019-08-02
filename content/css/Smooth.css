@@ -130,7 +130,7 @@ Main Page
 }
 
 #main .anime-block .output-link {
-    padding: 2px 5px 0 15px;
+    padding: 2px 10px 0 5px;
     overflow: hidden;
     word-break: break-all;
 }
@@ -215,6 +215,7 @@ Anime Management
     background: #2e50a11f;
     padding: 20px 10px 20px 10px;
     margin: 20px auto;
+    border-radius: 5px;
 }
 
 #anime-controls .text-input {
@@ -289,6 +290,39 @@ Anime Suggestions
 	float: right;
 	color: #2e51a1;
     margin: -5px 3px;
+}
+
+.suggestions-modal {
+	background-color: #a7aaff;
+    height: 200px;
+    width: 200px;
+    /*border-radius: 5px;*/
+    padding: 5px 10px;
+    box-shadow: 4px 4px #000000;
+}
+
+.suggestions-modal .suggestion-modal-title {
+	font-size: 12pt;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.suggestions-modal .suggestion-modal-content {
+
+
+}
+
+.suggestions-modal .anime-suggestion-result {
+	font-weight: bold;
+	margin: 5px;
+}
+.suggestions-modal .suggestion-add-button {
+	float: right;
+    font-weight: bold;
+    color: #fff;
+    padding: 1px 5px 2px 5px;
+    background-color: #2e50a1;
+    border-radius: 5px;
 }
 
 /*
@@ -535,6 +569,7 @@ Adhoc Modal
 */
 
 #adhoc-modal-wrapper {
+	z-index: 100;
 	position: relative;
 }
 
@@ -543,10 +578,12 @@ Adhoc Modal
 	position: absolute;
     top: -400px;
     left: 25%;
-    background-color: #fff;
-    height: 200px;
-    width: 200px;
-    border: 1px solid #000;
+}
+
+#adhoc-modal #adhoc-modal-close {
+	float: right;
+    font-size: 1.5em;
+    color: #ca3636;
 }
 
 
