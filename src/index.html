@@ -83,6 +83,14 @@
             <span>Consolidate multiple results </span>
             <input type="checkbox" id="consolidate-results-checkbox" />
           </div>
+          <div class="setting-option">
+            <span>Advanced Mode</span>
+            <input type="checkbox" id="advanced-checkbox" />
+          </div>
+          <div class="setting-option">
+            <span>Enable Labels</span>
+            <input type="checkbox" id="labels-checkbox" />
+          </div>
         </div>
         <div class="setting-option-filters">
           <span>Filters</span>
@@ -107,6 +115,9 @@
               <i class="fa fa-fw fa-chevron-down"></i>
               <i class="fa fa-fw fa-chevron-left"></i>
             </div>-->
+            <div id="anime-add-icons" title="Add Anime">
+              Add
+            </div>
             <input type="text" class="text-input rq-form-element" id="anime-title-input" placeholder="Title" />
             <input type="text" class="text-input rq-form-element" id="anime-label-input" placeholder="Label" />
 
@@ -117,11 +128,10 @@
             </div>
             <!--</div>-->
 
-            <div id="anime-add-icons" title="Add Anime">
+            
               <!--<i class="fa fa-plus fa-sm" data-fa-transform="shrink-6"></i>
               <i class="far fa-list-alt fa-xs" data-fa-transform="grow-4"></i>-->
-              Add
-            </div>
+              
           </div>
 
           <div id="feed-controls" class="content">
@@ -129,6 +139,13 @@
                 <i class="fa fa-fw fa-chevron-down"></i>
                 <i class="fa fa-fw fa-chevron-left"></i>
               </div>-->
+              <div id="feed-add-icons" class="fa-4x" title="Add Feed">
+                Add
+                <span class="fa-layers fa-fw">
+                  <i class="fas fa-cloud"></i>
+                  <i class="fa-inverse fas fa-plus" data-fa-transform="shrink-8"></i>
+                </span>
+              </div>
               <input type="text" class="text-input rq-form-element" id="feed-title-input" placeholder="Title" />
               <input type="text" class="text-input rq-form-element" id="feed-url-input" placeholder="Url" />
               <!--<div class="panel-body">-->
@@ -137,13 +154,7 @@
                 <input type="text" class="text-input rq-form-element" id="feed-linkField-input" placeholder="Link Field" />
               </div>
               <!--</div>-->
-              <div id="feed-add-icons" class="fa-4x" title="Add Feed">
-                Add
-                <span class="fa-layers fa-fw">
-                  <i class="fas fa-cloud"></i>
-                  <i class="fa-inverse fas fa-plus" data-fa-transform="shrink-8"></i>
-                </span>
-              </div>
+              
           </div>
         </div>
       </div>

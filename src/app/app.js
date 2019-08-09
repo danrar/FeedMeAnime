@@ -49,7 +49,8 @@ const pageState = {
         labelAsTag: false,
         parseLinks: false,
         consolidateResults: false,
-        advanced: false
+        advanced: false,
+        labels: false
     },
     feedFuzzyset: null
     //To Add
@@ -83,6 +84,8 @@ FeedMeAnime.setSettings = function () {
     $("#label-tag-checkbox").prop("checked", pageState.settings.labelAsTag);
     $("#parse-links-checkbox").prop("checked", pageState.settings.parseLinks);
     $("#consolidate-results-checkbox").prop("checked", pageState.settings.consolidateResults);
+    $("#advanced-checkbox").prop("checked", pageState.settings.advanced);
+    $("#labels-checkbox").prop("checked", pageState.settings.labels);
 }
 
 FeedMeAnime.initStorage = async function () {
@@ -389,6 +392,7 @@ FeedMeAnime.reloadAnime = function () {
             let animeNickname;
             let animeLabelRaw = "";
             let displayText;
+            let labelText = "";
 
             let anime = pageState.anime[i];
 
@@ -407,6 +411,13 @@ FeedMeAnime.reloadAnime = function () {
                 displayText = `${displayText} - ${animeLabel}`;
             }
 
+            if (pageState.settings.labels) {
+                labelText = `
+                    <div class="icon change-label" title="Change Label">
+                        <i class="fa fa-tag"></i>
+                    </div>`;
+            }
+
             $("#anime-entries").append(`
                 <div data-index="${i}" data-nickname="${animeNickname}" data-title="${animeTitle}" ${animeLabelRaw} data-thumbnailurl="${anime.thumbnailUrl}" class="anime-title">
                     <div class="icon remove-anime" title="Delete">
@@ -415,9 +426,7 @@ FeedMeAnime.reloadAnime = function () {
                     <div class="icon archive-anime" title="Archive">
                         <i class="fa fa-archive"></i>
                     </div>
-                    <div class="icon change-label" title="Change Label">
-                        <i class="fa fa-tag"></i>
-                    </div>
+                    ${labelText}
                     <div class="icon change-nickname" title="Change Nickname">
                         <i class="fa fa-pencil-alt"></i>
                     </div>
@@ -538,6 +547,7 @@ FeedMeAnime.loadSuggestions = async function () {
         if (i < pageState.suggestions.display) {
             $("#anime-suggestions-options").append(`
                 <a class="js-dyna-link" data-link="https://myanimelist.net/search/all?q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/mal.png" class="suggestions-link"></a>
+                <a class="js-dyna-link" data-link="https://www.crunchyroll.com/search?from=&q=${encodeURI(val.attributes["canonicalTitle"])}"><img src="content/imgs/cr.png" class="suggestions-link"></a>
                 <div data-title="${val.attributes["canonicalTitle"]}" data-imageurl="${_.get(val, "attributes.posterImage.tiny")}" class="anime-suggestion">
                     ${val.attributes["canonicalTitle"]}
                 </div>`);
@@ -684,13 +694,19 @@ FeedMeAnime.listResults = async function(results, title, imgString, tagText) {
                 payoffCode = `<div class="output"><div class="output-link"><a href="${val["link"]}" target="_blank" title="${val["link"]}">${val["title"]}</a></div></div>`;
             }
         }
+
+        let labelText = "";
+
+        if (pageState.settings.labels) {
+            labelText = `<input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Copy to Clipboard"><i class="fa fa-copy"></i></div>`;
+        }
         
         $("#main").append(`<div class="anime-block" id="${titleHash}">
                                     ${imgString}
                                     <div data-title="${val["title"]}" class="result">
                                         <div class="info-title">${val["title"]}</div>
                                         <div class="anime-outputs">
-                                            <input type="text" class="info-label" value="${tagText}"><div class="icon clipboard-title-copy" title="Copy to Clipboard"><i class="fa fa-copy"></i></div>
+                                            ${labelText}
                                             ${payoffCode}
                                         </div>
                                     </div>
@@ -1024,6 +1040,8 @@ $(document).on('click', '#save-settings', async function () {
     pageState.settings.labelAsTag = $('#label-tag-checkbox').prop('checked');
     pageState.settings.parseLinks = $('#parse-links-checkbox').prop('checked');
     pageState.settings.consolidateResults = $('#consolidate-results-checkbox').prop('checked');
+    pageState.settings.advanced = $('#advanced-checkbox').prop('checked');
+    pageState.settings.labels = $('#labels-checkbox').prop('checked');
     await FMA.storage.sync.setItem("filters", pageState.filters);
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
     location.reload();
