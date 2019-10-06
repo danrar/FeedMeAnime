@@ -564,6 +564,16 @@ Tutorial
 	display: none;
 }
 
+#tutorial-disable {
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 50;
+}
+
 #tutorial #tutorial-contents .tutorial-overlay {
 	position: absolute;
 	z-index: 99;
@@ -630,6 +640,41 @@ Tutorial
 	pointer-events: none; 
 	cursor: default;
 	color: #d2d4d8;
+}
+
+#tutorial-notification {
+	height: 150px;
+    font-size: 10pt;
+    min-width: 150px; 
+    width: 150px;
+    top: -10px;
+}
+
+#tutorial-notification .icon {
+	float: right;
+    margin: 5px 0 0 10px;
+}
+
+#tutorial-notification .title {
+	font-size: 28px;
+    font-weight: bold;
+}
+
+#tutorial-notification .message {
+	padding: 4px 0 3px 0;
+	text-align: center;
+	font-weight: bold;
+}
+
+#tutorial-start-button {
+	clear: both;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 30pt;
+}
+
+#tutorial-start-button svg {
+	color: #948dff;
 }
 
 /*

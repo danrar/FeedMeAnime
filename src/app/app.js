@@ -84,7 +84,7 @@ FeedMeAnime.setSettings = function () {
         if (pageState.settings.theme === value) {
             $("#themes-select").append(opts.attr("selected", "selected"));
         } else {
-            $("#themes-select").append(opts)
+            $("#themes-select").append(opts);
         }
     });
 
@@ -199,7 +199,7 @@ FeedMeAnime.initialize = async function () {
     }
 
     if (pageState.settings.tutorial) {
-        this.startTutorial();
+        this.pushTutorial();
     }
 
     pageState.feedFuzzyset = FuzzySet();
@@ -353,6 +353,25 @@ FeedMeAnime.pushNotification = function (message) {
     });
 }
 
+FeedMeAnime.pushTutorial = function () {
+    const note = $(`<div class="notification" id="tutorial-notification">
+                        <div class="icon notification-close"><i class="fa fa-times"></i></div>
+                        <div class="title">New?</div>
+                        <div class="message">Check out the tutorial!</div>
+                        <div id="tutorial-start-button"><i class="fas fa-play"></i></div>
+                    </div>`);
+    $("#notifications").append(note);
+    note.animate({ "top": "-16px" }).delay(14000).fadeOut(300, function () {
+        $(this).remove();
+        FMA.endTutorial();
+    });
+
+    /*
+    <div class="title">It looks like you are new to Feed Me Anime!</div>
+                        <div class="message">Why not check out the tutorial for a quick how to.</div>
+     */
+}
+
 FeedMeAnime.clearCache = async function () {
     pageState.animeListings = [];
     await this.storage.local.setItem("animeListings", pageState.animeListings);
@@ -476,7 +495,6 @@ FeedMeAnime.reloadFeeds = function () {
                 <div data-feed-title="${feed.title}" class="feed-contents">
                 </div>
             `);
-
         }
     }
 }
@@ -768,7 +786,6 @@ FeedMeAnime.consolidateResults = async function(results, title, imgString, tagTe
                                             ${allPayoffs}
                                             </div>
                                     </div>
-                                    
                                 </div>`);
        /*<div class="viewed-overlay"></div>
                                     <div class="anime-seen" title="Seen"><i class="far fa-eye fa-2x"></i></div>*/
@@ -804,7 +821,6 @@ FeedMeAnime.startTutorial = async function() {
 
     let response = await fetch(url);
     let test = await response.json()
-    //console.log(test);
 
     var html = ``;
     var part = 0;
@@ -830,7 +846,7 @@ FeedMeAnime.startTutorial = async function() {
                                 `+ object.tab +`
                             </div>
                             ` + step.bubble.contents + `
-                            <i class="fa fa-arrow-left fa-2x bubble-navigate-left"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right"></i>
+                            <i class="fa fa-arrow-left fa-2x bubble-navigate-left" title="Previous Hint"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right" title="Next Hint"></i>
                             </div>
                           </div>`
             pageState.tutorial.tutorialPath[part].steps.push({stepNumber: step.number});
@@ -851,11 +867,13 @@ FeedMeAnime.startTutorial = async function() {
     this.loadTutorialStep();
 
     $('#tutorial').show();
+    $('#tutorial-disable').show();
 }
 
 FeedMeAnime.endTutorial = async function() {
     pageState.settings.tutorial = false;
     $('#tutorial').hide();
+    $('#tutorial-disable').hide();
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
     $("#tutorial-checkbox").prop("checked", pageState.settings.tutorial);
 }
@@ -897,7 +915,7 @@ FeedMeAnime.loadTutorialStep = function() {
         $(".tutorial-part[data-section-number='"+ pageState.tutorial.tutorialPart +"'] .tutorial-overlay[data-step='"+ pageState.tutorial.tutorialStep +"']").show().addClass('tutorial-active');
     }
 
-    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].tab +` - ` + (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length);
+    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].tab +` - <span title="Total Tutorial Pages">` + (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length) + `</span>`;
 }
 
 FeedMeAnime.getDataUri = function (url, callback) {
@@ -1487,6 +1505,10 @@ $(document).on('click', '#tutorial-skip-part-button', async function () {
 
     FMA.checkTutorialNavigation();
     FMA.loadTutorialStep();
+});
+$(document).on('click', '#tutorial-start-button', async function () {
+    FMA.startTutorial();
+    $('#tutorial-notification').remove();
 });
 
 $(document).on('click', '#tutorial-end-button', async function () {
