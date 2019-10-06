@@ -1,0 +1,112 @@
+{
+    "tutorialPage1": {
+        "title": "tut-main-list",
+        "number": 0,
+        "tab": "Main List",
+        "steps": {
+            "step1": {
+                "number": 0,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"This is your main list. <br /> It lists all the RSS feed items you are interested in. <br /> Updating your Animes and Feeds changes what will be displayed here."
+                }
+            },
+            "step2": {
+                "number": 1,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"Customise your list or leave it as is. <br /> All the information you need is quick to access."
+                }
+            },
+            "step3": {
+                "number": 2,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"Hide episodes once you have watched them!"
+                }
+            }
+        }
+    },
+    "tutorialPage2": {
+        "title": "tut-add-anime",
+        "number": 1,
+        "tab": "Tracking Anime",
+        "steps": {
+            "step1": {
+                "number": 0,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"This is your main list. <br /> It lists all the RSS feed items you are interested in. <br /> Updating your Animes and Feeds changes what will be displayed here."
+                }
+            },
+            "step2": {
+                "number": 1,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"Customise your list or leave it as is. <br /> All the information you need is quick to access."
+                }
+            },
+            "step3": {
+                "number": 2,
+                "highlight": {
+                    "top": "11px",
+                    "left": "358px",
+                    "height": "50px",
+                    "width": "170px"
+                },
+                "bubble": {
+                    "top": "80px",
+                    "left": "-200px",
+                    "height": "150px",
+                    "width": "300px",
+                    "contents":"Hide episodes once you have watched them!"
+                }
+            }
+        }
+    }
+}

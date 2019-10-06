@@ -564,6 +564,74 @@ Tutorial
 	display: none;
 }
 
+#tutorial #tutorial-contents .tutorial-overlay {
+	position: absolute;
+	z-index: 99;
+	border-radius: 10px;
+	box-shadow: 0px 0px 0px 999px rgba(0,0,0,.7);
+	display: none;
+}
+
+#tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble {
+	position: relative;
+    left: -50px;
+    top: 100px;
+    background-color: #FFF;
+    padding: 10px;
+    /* border-radius: 10px; */
+    box-shadow: 3px 3px #9eafff;
+    width: 200px;
+    height: 150px;
+}
+
+#tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .bubble-navigate-left{
+	position: absolute;
+    bottom: 5px;
+	right: 35px;
+}
+
+#tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .bubble-navigate-right{
+	position: absolute;
+    bottom: 5px;
+    right: 10px;
+}
+
+#tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .tutorial-title {
+	border-bottom: 1px solid;
+    font-weight: bold;
+}
+
+#tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .tutorial-title .tutorial-step-count {
+	float: right;
+}
+
+#tutorial #tutorial-part-controls {
+	position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+#tutorial #tutorial-part-controls svg {
+	margin-right: 5px;
+	color: #ffffff;
+	float: right;
+}
+
+#tutorial #tutorial-part-controls #tutorial-controls-text {
+	color: #fff;
+    font-weight: bold;
+    font-size: 16pt;
+    float: right;
+    margin: 2px 10px 0 0;
+}
+
+#tutorial #tutorial-contents .disabled {
+	pointer-events: none; 
+	cursor: default;
+	color: #d2d4d8;
+}
+
 /*
 Adhoc Modal
 */

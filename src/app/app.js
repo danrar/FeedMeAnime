@@ -50,9 +50,16 @@ const pageState = {
         parseLinks: false,
         consolidateResults: false,
         advanced: false,
-        labels: false
+        labels: false,
+        tutorial: true
     },
-    feedFuzzyset: null
+    feedFuzzyset: null,
+    tutorial: {
+        tutorialPart: 0,
+        tutorialStep: 0,
+        tutorialPath: []
+    }
+
     //To Add
     //setting remove duplicates
     //setting infohash to magnet link
@@ -86,6 +93,7 @@ FeedMeAnime.setSettings = function () {
     $("#consolidate-results-checkbox").prop("checked", pageState.settings.consolidateResults);
     $("#advanced-checkbox").prop("checked", pageState.settings.advanced);
     $("#labels-checkbox").prop("checked", pageState.settings.labels);
+    $("#tutorial-checkbox").prop("checked", pageState.settings.tutorial);
 }
 
 FeedMeAnime.initStorage = async function () {
@@ -185,9 +193,13 @@ FeedMeAnime.initialize = async function () {
         await this.getSuggestions();
     }
 
-    if(pageState.settings.advanced) {
+    if (pageState.settings.advanced) {
         $('#anime-advanced-options').show();
         $('#feed-advanced-options').show();
+    }
+
+    if (pageState.settings.tutorial) {
+        this.startTutorial();
     }
 
     pageState.feedFuzzyset = FuzzySet();
@@ -195,19 +207,19 @@ FeedMeAnime.initialize = async function () {
 
 FeedMeAnime.getRss = async function (feed, skipCache = false) {
     try {
-        const res = await $.ajax({
-            url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=${skipCache}&rssUrl=${feed.url}`,
-            type: "GET",
-            cache: false,
-            dataType: "json"
-        });
-        return res;
-        //return $.xml2json(res);
-    } catch (err) {
-        console.log(err);
-        this.pushNotification("No response from " + feed.title);
-        return null;
-    }
+            const res = await $.ajax({
+                url: `http://feedmeanimeapi.azurewebsites.net/rss?skipCache=${skipCache}&rssUrl=${feed.url}`,
+                type: "GET",
+                cache: false,
+                dataType: "json"
+            });
+            return res;
+            //return $.xml2json(res);
+        } catch (err) {
+            console.log(err);
+            this.pushNotification("No response from " + feed.title);
+            return null;
+        }
 }
 
 FeedMeAnime.sync = async function () {
@@ -786,6 +798,108 @@ FeedMeAnime.unsetAnimeSeen = function(animeBlock) {
 
 }
 
+FeedMeAnime.startTutorial = async function() {
+
+    const url = chrome.runtime.getURL('content/tutorials/'+ pageState.settings.theme +'.json');
+
+    let response = await fetch(url);
+    let test = await response.json()
+    //console.log(test);
+
+    var html = ``;
+    var part = 0;
+    _.forEach(test, (object) => {
+        html = html + `<div id="` + object.title + `" class="tutorial-part" data-section-number="` + object.number + `">`;
+
+        pageState.tutorial.tutorialPath.push({
+            partName: object.title,
+            partNumber: object.number,
+            tab: object.tab,
+            steps: []
+        })
+
+        var step = 0;
+        _.forEach(object.steps, (step) => {
+
+            var bubbleStyle = step.class ? " " + step.class : "";
+
+            html = html + `<div id="` + object.title + `-step-` + step.number + `" class="tutorial-overlay" data-step="` + step.number + `" style="top: ` + step.highlight.top + `; left: ` + step.highlight.left + `; height: ` + step.highlight.height + `; width: ` + step.highlight.width + `;">
+                            <div class="tutorial-bubble` + bubbleStyle + `" id="` + object.title + `-step-` + step.number + `-bubble" style="left: ` + step.bubble.left + `; top: ` + step.bubble.top + `; width: ` + step.bubble.width + `; height: ` + step.bubble.height + `;">
+                            <div class="tutorial-title">
+                                <div class="tutorial-step-count">`+ (step.number + 1) +`/`+ Object.keys(object.steps).length +`</div>
+                                `+ object.tab +`
+                            </div>
+                            ` + step.bubble.contents + `
+                            <i class="fa fa-arrow-left fa-2x bubble-navigate-left"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right"></i>
+                            </div>
+                          </div>`
+            pageState.tutorial.tutorialPath[part].steps.push({stepNumber: step.number});
+            //tutorialPath[part] = tutorialPath[part] + "," +  step;
+            step++;
+        });
+
+        html = html + `</div>`;
+        part++;
+    });
+
+    console.log(pageState.tutorial.tutorialPath);
+
+    $('#tutorial-contents').html(html);
+
+    this.checkTutorialNavigation();
+
+    this.loadTutorialStep();
+
+    $('#tutorial').show();
+}
+
+FeedMeAnime.endTutorial = async function() {
+    pageState.settings.tutorial = false;
+    $('#tutorial').hide();
+    await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
+    $("#tutorial-checkbox").prop("checked", pageState.settings.tutorial);
+}
+
+FeedMeAnime.checkTutorialNavigation = function() {
+    var part = pageState.tutorial.tutorialPart;
+    var step = pageState.tutorial.tutorialStep;
+    $('.bubble-navigate-left').removeClass('disabled');
+    $('.bubble-navigate-right').removeClass('disabled');
+
+    if (part == 0 && step == 0) {
+        $('.bubble-navigate-left').addClass('disabled');
+    }
+
+    var lastPart = pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPath.length-1];
+
+    if (lastPart.partNumber == part && lastPart.steps[lastPart.steps.length-1].stepNumber == step) {
+        $('.bubble-navigate-right').addClass('disabled');
+    }
+}
+
+FeedMeAnime.loadTutorialStep = function() {
+    $('.tutorial-overlay').hide();
+
+    if (pageState.tutorial.tutorialStep == 0 && pageState.tutorial.tutorialPart == 0) {
+        if(!$('#sync').hasClass('active-tab')){
+            $('#sync').click();
+        }
+        $('.tutorial-overlay').first().show().addClass('tutorial-active');
+    } else {
+        switch (pageState.tutorial.tutorialPart)
+        {
+            case 0: if(!$('#sync').hasClass('active-tab')){$('#sync').click();} break;
+            case 1: if(!$('#add-anime').hasClass('active-tab')){$('#add-anime').click();} break;
+            case 2: if(!$('#add-feed').hasClass('active-tab')){$('#add-feed').click();} break;
+            case 3: if(!$('#change-settings').hasClass('active-tab')){$('#change-settings').click();} break;
+        }
+
+        $(".tutorial-part[data-section-number='"+ pageState.tutorial.tutorialPart +"'] .tutorial-overlay[data-step='"+ pageState.tutorial.tutorialStep +"']").show().addClass('tutorial-active');
+    }
+
+    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].tab +` - ` + (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length);
+}
+
 FeedMeAnime.getDataUri = function (url, callback) {
     let image = new Image();
     image.src = url;
@@ -1042,6 +1156,7 @@ $(document).on('click', '#save-settings', async function () {
     pageState.settings.consolidateResults = $('#consolidate-results-checkbox').prop('checked');
     pageState.settings.advanced = $('#advanced-checkbox').prop('checked');
     pageState.settings.labels = $('#labels-checkbox').prop('checked');
+    pageState.settings.tutorial = $('#tutorial-checkbox').prop('checked');
     await FMA.storage.sync.setItem("filters", pageState.filters);
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
     location.reload();
@@ -1329,6 +1444,54 @@ $(document).on('click', '.change-nickname', async function () {
     await FMA.clearCache();
 });
 
+$(document).on('click', '.bubble-navigate-left', async function () {
+    if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[0].stepNumber < pageState.tutorial.tutorialStep) {
+        $('.tutorial-active').removeClass('tutorial-active');
+        pageState.tutorial.tutorialStep--;
+    } else if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart-1] != undefined) {
+        $('.tutorial-active').removeClass('tutorial-active');
+        pageState.tutorial.tutorialPart--;
+        pageState.tutorial.tutorialStep = pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps.length-1].stepNumber;
+    }
+
+    FMA.checkTutorialNavigation();
+    FMA.loadTutorialStep();
+});
+
+$(document).on('click', '.bubble-navigate-right', async function () {
+    if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps.length-1].stepNumber > pageState.tutorial.tutorialStep) {
+        $('.tutorial-active').removeClass('tutorial-active');
+        pageState.tutorial.tutorialStep++;
+    } else if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart+1] != undefined) {
+        $('.tutorial-active').removeClass('tutorial-active');
+        pageState.tutorial.tutorialPart++;
+        pageState.tutorial.tutorialStep = 0;
+    } else {
+        FMA.endTutorial();
+        return;
+    }
+
+    FMA.checkTutorialNavigation();
+    FMA.loadTutorialStep();
+});
+
+$(document).on('click', '#tutorial-skip-part-button', async function () {
+    if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart+1] != undefined) {
+        $('.tutorial-active').removeClass('tutorial-active');
+        pageState.tutorial.tutorialPart++;
+        pageState.tutorial.tutorialStep = 0;
+    } else {
+        FMA.endTutorial();
+        return;
+    }
+
+    FMA.checkTutorialNavigation();
+    FMA.loadTutorialStep();
+});
+
+$(document).on('click', '#tutorial-end-button', async function () {
+    FMA.endTutorial();
+});
 
 $(document).on('click', '#add-filter', async function () {
     var feed = $('#filter-feed-input').val();
