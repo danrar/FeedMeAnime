@@ -26,8 +26,8 @@ const pageState = {
     animeListings: [],
     anime: [],
     rssFeeds: [{
-        title: "Horrible Subs",
-        url: "http://horriblesubs.info/rss.php?res=1080",
+        title: "Crunchyroll Anime",
+        url: "https://www.crunchyroll.com/rss/anime?lang=enGB",
         titleField: 'title',
         linkField: 'link',
         active: true
@@ -628,57 +628,59 @@ FeedMeAnime.loadFuzzyFeedStrings = async function () {
         if (pageState.rssFeeds[i].active){
             let feed = this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0];
 
-            let wordBreakdown = [];
-            let finalSkipWords = [];
-            let first = feed.contents[0][pageState.rssFeeds[i].titleField];
-            let firstSplit = null;
-            let splitChars = [" ", "_"];
-            let alwaysInclude = ["-"];
-            let bestSplit = {char: null, splits: 0, results: null};
-            let checkPercent = 0.5;
-            let cutPercent = 0.9;
-            let setSize = feed.contents.length;
+            if (!jQuery.isEmptyObject(feed)) {
+                let wordBreakdown = [];
+                let finalSkipWords = [];
+                let first = feed.contents[0][pageState.rssFeeds[i].titleField];
+                let firstSplit = null;
+                let splitChars = [" ", "_"];
+                let alwaysInclude = ["-"];
+                let bestSplit = {char: null, splits: 0, results: null};
+                let checkPercent = 0.5;
+                let cutPercent = 0.9;
+                let setSize = feed.contents.length;
 
-            _.forEach(splitChars, (char) => {
-                let results = first.split(char);
-                let length = results.length;
-                if (length > 1 && length > bestSplit.splits) {
-                    bestSplit = {char: char, splits: length, results: results};
-                }
-            });
-
-            _.forEach(bestSplit.results, (split) => { 
-                if(wordBreakdown.filter(function(object){return object.word === split}).length == 0){
-                    wordBreakdown.push({
-                       word: split,
-                       frequency: 0
-                    });
-                }
-            });
-
-            let size = Math.round(setSize * checkPercent);
-
-            _.forEach(feed.contents, (entry) => {
-                _.forEach(entry[pageState.rssFeeds[i].titleField].split(bestSplit.char), (val) => {
-                    if(wordBreakdown.filter(function(object){return object.word === val}).length > 0){
-                        wordBreakdown.find(word => word.word === val).frequency++;
+                _.forEach(splitChars, (char) => {
+                    let results = first.split(char);
+                    let length = results.length;
+                    if (length > 1 && length > bestSplit.splits) {
+                        bestSplit = {char: char, splits: length, results: results};
                     }
                 });
-            });
 
-            for (var j = 0; j < wordBreakdown.length; j++) {
-                if(wordBreakdown[j].frequency > Math.round(size * cutPercent) && !alwaysInclude.includes(wordBreakdown[j].word)) {
-                    finalSkipWords.push(wordBreakdown[j]); 
-                }
-            }
-
-            _.forEach(feed.contents, (val) => { 
-                let phrase = val[pageState.rssFeeds[i].titleField];          
-                _.forEach(finalSkipWords, (word) => {
-                    phrase = phrase.replace(word.word, '');
+                _.forEach(bestSplit.results, (split) => { 
+                    if(wordBreakdown.filter(function(object){return object.word === split}).length == 0){
+                        wordBreakdown.push({
+                           word: split,
+                           frequency: 0
+                        });
+                    }
                 });
-                pageState.feedFuzzyset.add(phrase);
-            });
+
+                let size = Math.round(setSize * checkPercent);
+
+                _.forEach(feed.contents, (entry) => {
+                    _.forEach(entry[pageState.rssFeeds[i].titleField].split(bestSplit.char), (val) => {
+                        if(wordBreakdown.filter(function(object){return object.word === val}).length > 0){
+                            wordBreakdown.find(word => word.word === val).frequency++;
+                        }
+                    });
+                });
+
+                for (var j = 0; j < wordBreakdown.length; j++) {
+                    if(wordBreakdown[j].frequency > Math.round(size * cutPercent) && !alwaysInclude.includes(wordBreakdown[j].word)) {
+                        finalSkipWords.push(wordBreakdown[j]); 
+                    }
+                }
+
+                _.forEach(feed.contents, (val) => { 
+                    let phrase = val[pageState.rssFeeds[i].titleField];          
+                    _.forEach(finalSkipWords, (word) => {
+                        phrase = phrase.replace(word.word, '');
+                    });
+                    pageState.feedFuzzyset.add(phrase);
+                });
+            }
         }
     }
 }
@@ -984,6 +986,11 @@ window.FMA = FeedMeAnime;
 
 $(document).on("click", ".notification-close", function () {
     $(this).parent().remove();
+});
+
+$(document).on("click", "#tutorial-notification .notification-close", function () {
+    $('#tutorial-notification').remove();
+    FMA.endTutorial();
 });
 
 $('#add-anime').click(function () {
@@ -1490,7 +1497,7 @@ $(document).on('click', '.change-nickname', async function () {
 $(document).on('click', '.bubble-navigate-left', async function () {
     var part = pageState.tutorial.tutorialPart;
     var step = pageState.tutorial.tutorialStep;
-    
+
     if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[0].stepNumber < pageState.tutorial.tutorialStep) {
         if(pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
             switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {

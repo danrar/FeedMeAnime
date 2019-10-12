@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Feed Me Anime",
   "description": "RSS Feed to Magnet Link Parser",
-  "version": "1.03",
+  "version": "1.5",
   "background": {
     "scripts": [
       "popup.bundle.js",

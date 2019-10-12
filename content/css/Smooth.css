@@ -296,12 +296,13 @@ Anime Suggestions
 }
 
 .suggestions-modal {
-	background-color: #a7aaff;
+	background-color: #e2e2e2;
     height: 200px;
-    width: 200px;
+    width: 300px;
     /*border-radius: 5px;*/
     padding: 5px 10px;
     box-shadow: 4px 4px #000000;
+    margin-left: -40px;
 }
 
 .suggestions-modal .suggestion-modal-title {
