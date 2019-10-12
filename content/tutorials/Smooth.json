@@ -7,17 +7,18 @@
             "step1": {
                 "number": 0,
                 "highlight": {
-                    "top": "11px",
-                    "left": "358px",
-                    "height": "50px",
-                    "width": "170px"
+                    "top": "60px",
+                    "left": "15px",
+                    "height": "400px",
+                    "width": "480px"
                 },
                 "bubble": {
-                    "top": "80px",
-                    "left": "-200px",
-                    "height": "150px",
+                    "top": "300px",
+                    "left": "140px",
+                    "height": "120px",
                     "width": "300px",
-                    "contents":"This is your main list. <br /> It lists all the RSS feed items you are interested in. <br /> Updating your Animes and Feeds changes what will be displayed here."
+                    "title": "Your List",
+                    "contents":"This is your list. <br /> It lists the recent episodes of Anime you have tracked! <br /> Adding to your Animes and Feeds changes what will be displayed here."
                 }
             },
             "step2": {
@@ -33,23 +34,25 @@
                     "left": "-200px",
                     "height": "150px",
                     "width": "300px",
-                    "contents":"Customise your list or leave it as is. <br /> All the information you need is quick to access."
+                    "title": "Navigation",
+                    "contents": "All the pages you need are quick to access. <br />Tracking Anime, Adding to your Feeds and Updating your Settings are just one click away."
                 }
             },
             "step3": {
                 "number": 2,
                 "highlight": {
-                    "top": "11px",
-                    "left": "358px",
-                    "height": "50px",
-                    "width": "170px"
+                    "top": "55px",
+                    "left": "10px",
+                    "height": "160px",
+                    "width": "485px"
                 },
                 "bubble": {
-                    "top": "80px",
-                    "left": "-200px",
-                    "height": "150px",
-                    "width": "300px",
-                    "contents":"Hide episodes once you have watched them!"
+                    "top": "140px",
+                    "left": "120px",
+                    "height": "160px",
+                    "width": "285px",
+                    "title": "Anime View",
+                    "contents":"Customise how your Anime are displayed in the settings. <br/> We display the minimum info needed to keep up to date as episodes are released, so you can quickly get your fix.<br/>And then hide episodes once you have watched them!"
                 }
             }
         }
@@ -62,49 +65,173 @@
             "step1": {
                 "number": 0,
                 "highlight": {
-                    "top": "11px",
-                    "left": "358px",
-                    "height": "50px",
-                    "width": "170px"
+                    "top": "60px",
+                    "left": "12px",
+                    "height": "200px",
+                    "width": "512px"
                 },
                 "bubble": {
-                    "top": "80px",
-                    "left": "-200px",
+                    "top": "220px",
+                    "left": "40px",
                     "height": "150px",
                     "width": "300px",
-                    "contents":"This is your main list. <br /> It lists all the RSS feed items you are interested in. <br /> Updating your Animes and Feeds changes what will be displayed here."
+                    "title": "Your Anime",
+                    "contents":"Here you can find Anime you are currently tracking. <br /> Change their nickname or give them a special label to help recognition and organisation. <br /> Archive them once the season is over!"
                 }
             },
             "step2": {
                 "number": 1,
                 "highlight": {
-                    "top": "11px",
-                    "left": "358px",
-                    "height": "50px",
-                    "width": "170px"
+                    "top": "255px",
+                    "left": "40px",
+                    "height": "120px",
+                    "width": "455px"
                 },
                 "bubble": {
-                    "top": "80px",
-                    "left": "-200px",
-                    "height": "150px",
+                    "top": "113px",
+                    "left": "30px",
+                    "height": "110px",
                     "width": "300px",
-                    "contents":"Customise your list or leave it as is. <br /> All the information you need is quick to access."
+                    "title": "Adding",
+                    "contents": "Add an Anime you want to track, select from the auto-completed list for the best results! <br /> Change to Advanced Mode for some extra options."
                 }
             },
             "step3": {
                 "number": 2,
                 "highlight": {
-                    "top": "11px",
-                    "left": "358px",
-                    "height": "50px",
-                    "width": "170px"
+                    "top": "375px",
+                    "left": "10px",
+                    "height": "200px",
+                    "width": "520px"
                 },
                 "bubble": {
-                    "top": "80px",
-                    "left": "-200px",
+                    "top": "-200px",
+                    "left": "150px",
+                    "height": "170px",
+                    "width": "300px",
+                    "controlLocation": "top",
+                    "title": "Suggestions",
+                    "contents":"Suggestions are based on the most popular Anime season by season.<br /> Clicking an Anime prompts you to add it to your list.<br/><br/>Heard of something new you want to watch? Check your Suggestions and add it to your list from there or view information about it on MyAnimeList or Crunchy Roll."
+                }
+            }
+        }
+    }
+    ,
+    "tutorialPage3": {
+        "title": "tut-add-feeds",
+        "number": 2,
+        "tab": "Tracking Feeds",
+        "steps": {
+            "step1": {
+                "number": 0,
+                "highlight": {
+                    "top": "60px",
+                    "left": "12px",
+                    "height": "200px",
+                    "width": "512px"
+                },
+                "bubble": {
+                    "top": "220px",
+                    "left": "40px",
                     "height": "150px",
                     "width": "300px",
-                    "contents":"Hide episodes once you have watched them!"
+                    "title": "Your Anime",
+                    "contents":"Here you can find Anime you are currently tracking. <br /> Change their nickname or give them a special label to help recognition and organisation. <br /> Archive them once the season is over!"
+                }
+            },
+            "step2": {
+                "number": 1,
+                "highlight": {
+                    "top": "255px",
+                    "left": "40px",
+                    "height": "120px",
+                    "width": "455px"
+                },
+                "bubble": {
+                    "top": "113px",
+                    "left": "30px",
+                    "height": "110px",
+                    "width": "300px",
+                    "title": "Adding",
+                    "contents": "Add an Anime you want to track, select from the auto-completed list for the best results! <br /> Change to Advanced Mode for some extra options."
+                }
+            },
+            "step3": {
+                "number": 2,
+                "highlight": {
+                    "top": "375px",
+                    "left": "10px",
+                    "height": "200px",
+                    "width": "520px"
+                },
+                "bubble": {
+                    "top": "-200px",
+                    "left": "150px",
+                    "height": "170px",
+                    "width": "300px",
+                    "controlLocation": "top",
+                    "title": "Suggestions",
+                    "contents":"Suggestions are based on the most popular Anime season by season.<br /> Clicking an Anime prompts you to add it to your list.<br/><br/>Heard of something new you want to watch? Check your Suggestions and add it to your list from there or view information about it on MyAnimeList or Crunchy Roll."
+                }
+            }
+        }
+    }
+    ,
+    "tutorialPage4": {
+        "title": "tut-change-settings",
+        "number": 3,
+        "tab": "Settings",
+        "steps": {
+            "step1": {
+                "number": 0,
+                "highlight": {
+                    "top": "60px",
+                    "left": "12px",
+                    "height": "200px",
+                    "width": "512px"
+                },
+                "bubble": {
+                    "top": "220px",
+                    "left": "40px",
+                    "height": "150px",
+                    "width": "300px",
+                    "title": "Your Anime",
+                    "contents":"Here you can find Anime you are currently tracking. <br /> Change their nickname or give them a special label to help recognition and organisation. <br /> Archive them once the season is over!"
+                }
+            },
+            "step2": {
+                "number": 1,
+                "highlight": {
+                    "top": "255px",
+                    "left": "40px",
+                    "height": "120px",
+                    "width": "455px"
+                },
+                "bubble": {
+                    "top": "113px",
+                    "left": "30px",
+                    "height": "110px",
+                    "width": "300px",
+                    "title": "Adding",
+                    "contents": "Add an Anime you want to track, select from the auto-completed list for the best results! <br /> Change to Advanced Mode for some extra options."
+                }
+            },
+            "step3": {
+                "number": 2,
+                "highlight": {
+                    "top": "375px",
+                    "left": "10px",
+                    "height": "200px",
+                    "width": "520px"
+                },
+                "bubble": {
+                    "top": "-200px",
+                    "left": "150px",
+                    "height": "170px",
+                    "width": "300px",
+                    "controlLocation": "top",
+                    "title": "Suggestions",
+                    "contents":"Suggestions are based on the most popular Anime season by season.<br /> Clicking an Anime prompts you to add it to your list.<br/><br/>Heard of something new you want to watch? Check your Suggestions and add it to your list from there or view information about it on MyAnimeList or Crunchy Roll."
                 }
             }
         }

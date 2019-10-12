@@ -585,6 +585,10 @@ FeedMeAnime.loadSuggestions = async function () {
         i++;
     });
 
+    if(pageState.settings.advanced) {
+        $("#anime-suggestions-options").addClass('anime-suggestions-options-advanced')
+    }
+
     $("#anime-title-input").autocomplete({
         source: pageState.suggestions.items.map(suggestion => suggestion.attributes["canonicalTitle"]),
         minLength: 2
@@ -843,13 +847,13 @@ FeedMeAnime.startTutorial = async function() {
                             <div class="tutorial-bubble` + bubbleStyle + `" id="` + object.title + `-step-` + step.number + `-bubble" style="left: ` + step.bubble.left + `; top: ` + step.bubble.top + `; width: ` + step.bubble.width + `; height: ` + step.bubble.height + `;">
                             <div class="tutorial-title">
                                 <div class="tutorial-step-count">`+ (step.number + 1) +`/`+ Object.keys(object.steps).length +`</div>
-                                `+ object.tab +`
+                                `+ object.tab  +` - `+ step.bubble.title +`
                             </div>
                             ` + step.bubble.contents + `
-                            <i class="fa fa-arrow-left fa-2x bubble-navigate-left" title="Previous Hint"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right" title="Next Hint"></i>
+                            <i class="fa fa-arrow-left fa-2x bubble-navigate-left" title="Previous Hint"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right" title="Next Hint"></i><i class="fas fa-times fa-2x tutorial-end-button tutorial-bubble-end-button tutorial-end-hidden" title="End tutorial"></i>
                             </div>
                           </div>`
-            pageState.tutorial.tutorialPath[part].steps.push({stepNumber: step.number});
+            pageState.tutorial.tutorialPath[part].steps.push({stepNumber: step.number, controlLocation: step.bubble.controlLocation});
             //tutorialPath[part] = tutorialPath[part] + "," +  step;
             step++;
         });
@@ -883,6 +887,16 @@ FeedMeAnime.checkTutorialNavigation = function() {
     var step = pageState.tutorial.tutorialStep;
     $('.bubble-navigate-left').removeClass('disabled');
     $('.bubble-navigate-right').removeClass('disabled');
+    $('.bubble-navigate-right').removeClass('tutorial-end-hidden');
+    $('.tutorial-bubble-end-button').addClass('tutorial-end-hidden');
+
+    if(pageState.tutorial.tutorialPath[part].steps[step].controlLocation != undefined) {
+        $('#tutorial-part-controls').removeClass('tutorial-part-controls-bottom');
+        $('#tutorial-part-controls').addClass('tutorial-part-controls-top');
+    } else {
+        $('#tutorial-part-controls').removeClass('tutorial-part-controls-top');
+        $('#tutorial-part-controls').addClass('tutorial-part-controls-bottom');
+    }
 
     if (part == 0 && step == 0) {
         $('.bubble-navigate-left').addClass('disabled');
@@ -891,7 +905,8 @@ FeedMeAnime.checkTutorialNavigation = function() {
     var lastPart = pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPath.length-1];
 
     if (lastPart.partNumber == part && lastPart.steps[lastPart.steps.length-1].stepNumber == step) {
-        $('.bubble-navigate-right').addClass('disabled');
+        $('.bubble-navigate-right').addClass('tutorial-end-hidden');
+        $('.tutorial-bubble-end-button').removeClass('tutorial-end-hidden');
     }
 }
 
@@ -1511,7 +1526,7 @@ $(document).on('click', '#tutorial-start-button', async function () {
     $('#tutorial-notification').remove();
 });
 
-$(document).on('click', '#tutorial-end-button', async function () {
+$(document).on('click', '.tutorial-end-button', async function () {
     FMA.endTutorial();
 });
 

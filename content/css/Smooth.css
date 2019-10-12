@@ -249,7 +249,7 @@ Anime Management
 }
 
 #anime-controls #anime-advanced-options{
-	padding: 10px 0;
+	padding: 10px 0 0 0;
 }
 
 
@@ -266,6 +266,10 @@ Anime Suggestions
 #anime-suggestions #anime-suggestions-options {
 	max-height: 180px;
 	overflow: auto;
+}
+
+#anime-suggestions .anime-suggestions-options-advanced {
+	max-height: 150px !important;
 }
 
 #anime-suggestions {
@@ -590,6 +594,7 @@ Tutorial
     padding: 10px;
     /* border-radius: 10px; */
     box-shadow: 3px 3px #9eafff;
+    border: 1px solid #637eff;
     width: 200px;
     height: 150px;
 }
@@ -609,6 +614,7 @@ Tutorial
 #tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .tutorial-title {
 	border-bottom: 1px solid;
     font-weight: bold;
+    margin-bottom: 4px;
 }
 
 #tutorial #tutorial-contents .tutorial-overlay .tutorial-bubble .tutorial-title .tutorial-step-count {
@@ -616,10 +622,19 @@ Tutorial
 }
 
 #tutorial #tutorial-part-controls {
+    z-index: 100;
+}
+
+#tutorial .tutorial-part-controls-bottom {
 	position: absolute;
     bottom: 20px;
     right: 20px;
-    z-index: 100;
+}
+
+#tutorial .tutorial-part-controls-top {
+	position: absolute;
+	top: 30px;
+    right: 20px;
 }
 
 #tutorial #tutorial-part-controls svg {
@@ -675,6 +690,16 @@ Tutorial
 
 #tutorial-start-button svg {
 	color: #948dff;
+}
+
+#tutorial .tutorial-bubble-end-button {
+	position: absolute;
+    bottom: 5px;
+    right: 10px;
+}
+
+#tutorial .tutorial-end-hidden {
+	display: none;
 }
 
 /*
