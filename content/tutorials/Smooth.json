@@ -127,51 +127,52 @@
                 "highlight": {
                     "top": "60px",
                     "left": "12px",
-                    "height": "200px",
-                    "width": "512px"
+                    "height": "100px",
+                    "width": "505px"
                 },
                 "bubble": {
-                    "top": "220px",
+                    "top": "110px",
                     "left": "40px",
-                    "height": "150px",
-                    "width": "300px",
-                    "title": "Your Anime",
-                    "contents":"Here you can find Anime you are currently tracking. <br /> Change their nickname or give them a special label to help recognition and organisation. <br /> Archive them once the season is over!"
+                    "height": "95px",
+                    "width": "400px",
+                    "title": "A Feed",
+                    "contents":"Here's where your Feed content comes from! <br/> Add multiple and find one that suits you. <br/> It's easy to turn them on and off as well, quickly customising your Main List!"
                 }
             },
             "step2": {
                 "number": 1,
+                "trigger": ".feed:first .feed-expand",
+                "triggerBehaviour": "toggle",
                 "highlight": {
-                    "top": "255px",
-                    "left": "40px",
-                    "height": "120px",
-                    "width": "455px"
+                    "top": "60px",
+                    "left": "12px",
+                    "height": "305px",
+                    "width": "488px"
                 },
                 "bubble": {
-                    "top": "113px",
+                    "top": "313px",
                     "left": "30px",
                     "height": "110px",
-                    "width": "300px",
-                    "title": "Adding",
-                    "contents": "Add an Anime you want to track, select from the auto-completed list for the best results! <br /> Change to Advanced Mode for some extra options."
+                    "width": "400px",
+                    "title": "Feed Contents",
+                    "contents": "Expand the Feed to see it's current contents. <br /> Here you can add new a Anime as well with a little bit of user input. <br /> Always useful to check here if something you expect to see on your list isn't present."
                 }
             },
             "step3": {
                 "number": 2,
                 "highlight": {
-                    "top": "375px",
-                    "left": "10px",
-                    "height": "200px",
-                    "width": "520px"
+                    "top": "340px",
+                    "left": "35px",
+                    "height": "110px",
+                    "width": "465px"
                 },
                 "bubble": {
                     "top": "-200px",
                     "left": "150px",
                     "height": "170px",
                     "width": "300px",
-                    "controlLocation": "top",
-                    "title": "Suggestions",
-                    "contents":"Suggestions are based on the most popular Anime season by season.<br /> Clicking an Anime prompts you to add it to your list.<br/><br/>Heard of something new you want to watch? Check your Suggestions and add it to your list from there or view information about it on MyAnimeList or Crunchy Roll."
+                    "title": "Add a Feed",
+                    "contents":"Adding a Feed is simple, set a title for it and enter the URL. <br /> We take our best guess at the field you want displayed but with the Advanced Settings you can change that to be more accurate."
                 }
             }
         }
@@ -187,51 +188,69 @@
                 "highlight": {
                     "top": "60px",
                     "left": "12px",
-                    "height": "200px",
+                    "height": "130px",
                     "width": "512px"
                 },
                 "bubble": {
-                    "top": "220px",
+                    "top": "150px",
                     "left": "40px",
-                    "height": "150px",
-                    "width": "300px",
-                    "title": "Your Anime",
-                    "contents":"Here you can find Anime you are currently tracking. <br /> Change their nickname or give them a special label to help recognition and organisation. <br /> Archive them once the season is over!"
+                    "height": "120px",
+                    "width": "400px",
+                    "title": "Storage",
+                    "contents": "Manage your settings here! <br> Overtime your Anime list can get full of all the series you watched each season and if this gets full it might be time to delete some from your Tracked Anime or Archive some of your favourites or ones you know are returning later!"
                 }
             },
             "step2": {
                 "number": 1,
                 "highlight": {
-                    "top": "255px",
-                    "left": "40px",
-                    "height": "120px",
-                    "width": "455px"
+                    "top": "180px",
+                    "left": "20px",
+                    "height": "160px",
+                    "width": "495px"
                 },
                 "bubble": {
-                    "top": "113px",
+                    "top": "173px",
                     "left": "30px",
                     "height": "110px",
                     "width": "300px",
-                    "title": "Adding",
-                    "contents": "Add an Anime you want to track, select from the auto-completed list for the best results! <br /> Change to Advanced Mode for some extra options."
+                    "title": "Useful Features",
+                    "contents": "There are lots of little things you can tweak and change to make the extension tailored to you. <br /> More features are in development, check our GitHub to see any developments and give feedback, we are always looking to improve."
                 }
             },
             "step3": {
                 "number": 2,
                 "highlight": {
-                    "top": "375px",
-                    "left": "10px",
-                    "height": "200px",
-                    "width": "520px"
+                    "top": "323px",
+                    "left": "20px",
+                    "height": "90px",
+                    "width": "495px"
                 },
                 "bubble": {
-                    "top": "-200px",
+                    "top": "-130px",
                     "left": "150px",
-                    "height": "170px",
+                    "height": "100px",
                     "width": "300px",
                     "controlLocation": "top",
-                    "title": "Suggestions",
-                    "contents":"Suggestions are based on the most popular Anime season by season.<br /> Clicking an Anime prompts you to add it to your list.<br/><br/>Heard of something new you want to watch? Check your Suggestions and add it to your list from there or view information about it on MyAnimeList or Crunchy Roll."
+                    "title": "Filters",
+                    "contents":"Filters allow you to cut down the results you receive if you are using a particularly large RSS feed <br> This feature will be improved on shortly to make it more intuitive and flexible."
+                }
+            },
+            "step4": {
+                "number": 3,
+                "highlight": {
+                    "top": "400px",
+                    "left": "20px",
+                    "height": "50px",
+                    "width": "495px"
+                },
+                "bubble": {
+                    "top": "-160px",
+                    "left": "150px",
+                    "height": "120px",
+                    "width": "300px",
+                    "controlLocation": "top",
+                    "title": "Your Archive",
+                    "contents":"When you Archive an Anime or a Feed you can reinstate it from here later! <br /> Useful for seasonal Anime that returns or Feeds that contain entries you are interested in on a season to season basis."
                 }
             }
         }

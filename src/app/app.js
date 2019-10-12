@@ -853,7 +853,12 @@ FeedMeAnime.startTutorial = async function() {
                             <i class="fa fa-arrow-left fa-2x bubble-navigate-left" title="Previous Hint"></i><i class="fa fa-arrow-right fa-2x bubble-navigate-right" title="Next Hint"></i><i class="fas fa-times fa-2x tutorial-end-button tutorial-bubble-end-button tutorial-end-hidden" title="End tutorial"></i>
                             </div>
                           </div>`
-            pageState.tutorial.tutorialPath[part].steps.push({stepNumber: step.number, controlLocation: step.bubble.controlLocation});
+            pageState.tutorial.tutorialPath[part].steps.push({
+                                                            stepNumber: step.number, 
+                                                            controlLocation: step.bubble.controlLocation,
+                                                            trigger: step.trigger,
+                                                            triggerBehaviour: step.triggerBehaviour
+                                                        });
             //tutorialPath[part] = tutorialPath[part] + "," +  step;
             step++;
         });
@@ -898,6 +903,12 @@ FeedMeAnime.checkTutorialNavigation = function() {
         $('#tutorial-part-controls').addClass('tutorial-part-controls-bottom');
     }
 
+    if (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
+        switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
+            case "toggle": $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); break;
+        }
+    }
+
     if (part == 0 && step == 0) {
         $('.bubble-navigate-left').addClass('disabled');
     }
@@ -919,8 +930,7 @@ FeedMeAnime.loadTutorialStep = function() {
         }
         $('.tutorial-overlay').first().show().addClass('tutorial-active');
     } else {
-        switch (pageState.tutorial.tutorialPart)
-        {
+        switch (pageState.tutorial.tutorialPart) {
             case 0: if(!$('#sync').hasClass('active-tab')){$('#sync').click();} break;
             case 1: if(!$('#add-anime').hasClass('active-tab')){$('#add-anime').click();} break;
             case 2: if(!$('#add-feed').hasClass('active-tab')){$('#add-feed').click();} break;
@@ -1478,7 +1488,16 @@ $(document).on('click', '.change-nickname', async function () {
 });
 
 $(document).on('click', '.bubble-navigate-left', async function () {
+    var part = pageState.tutorial.tutorialPart;
+    var step = pageState.tutorial.tutorialStep;
+    
     if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[0].stepNumber < pageState.tutorial.tutorialStep) {
+        if(pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
+            switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
+                case "toggle": $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); break;
+            }
+        }
+
         $('.tutorial-active').removeClass('tutorial-active');
         pageState.tutorial.tutorialStep--;
     } else if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart-1] != undefined) {
@@ -1492,7 +1511,15 @@ $(document).on('click', '.bubble-navigate-left', async function () {
 });
 
 $(document).on('click', '.bubble-navigate-right', async function () {
-    if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps[pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].steps.length-1].stepNumber > pageState.tutorial.tutorialStep) {
+    var part = pageState.tutorial.tutorialPart;
+    var step = pageState.tutorial.tutorialStep;
+
+    if (pageState.tutorial.tutorialPath[part].steps[pageState.tutorial.tutorialPath[part].steps.length-1].stepNumber > pageState.tutorial.tutorialStep) {
+        if(pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
+            switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
+                case "toggle": $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); break;
+            }
+        }
         $('.tutorial-active').removeClass('tutorial-active');
         pageState.tutorial.tutorialStep++;
     } else if (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart+1] != undefined) {
