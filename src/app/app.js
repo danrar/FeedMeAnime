@@ -842,7 +842,6 @@ FeedMeAnime.startTutorial = async function() {
 
         var step = 0;
         _.forEach(object.steps, (step) => {
-
             var bubbleStyle = step.class ? " " + step.class : "";
 
             html = html + `<div id="` + object.title + `-step-` + step.number + `" class="tutorial-overlay" data-step="` + step.number + `" style="top: ` + step.highlight.top + `; left: ` + step.highlight.left + `; height: ` + step.highlight.height + `; width: ` + step.highlight.width + `;">
@@ -907,7 +906,17 @@ FeedMeAnime.checkTutorialNavigation = function() {
 
     if (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
         switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
-            case "toggle": $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); break;
+            case "toggle": 
+                $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); 
+                break;
+            /*case "follow":
+                var target = $(pageState.tutorial.tutorialPath[part].steps[step].trigger);
+                var highlight = $(`div[data-section-number=` + part + `] div[data-step=` + step + `]`);
+                highlight.css('top',target.offset().top + 'px');
+                highlight.css('left',target.offset().left + 'px');
+                highlight.css('height',target.height() + 'px');
+                highlight.css('width',target.width()  + 'px');
+                break;*/
         }
     }
 
@@ -924,25 +933,51 @@ FeedMeAnime.checkTutorialNavigation = function() {
 }
 
 FeedMeAnime.loadTutorialStep = function() {
-    $('.tutorial-overlay').hide();
+    $('.tutorial-bubble').hide();
+    $('.tutorial-overlay').css('background-color', 'rgba(0,0,0,.7)').hide(); 
 
-    if (pageState.tutorial.tutorialStep == 0 && pageState.tutorial.tutorialPart == 0) {
-        if(!$('#sync').hasClass('active-tab')){
-            $('#sync').click();
+
+    var step = pageState.tutorial.tutorialStep;
+    var part = pageState.tutorial.tutorialPart;
+
+    setTimeout(() => {
+        if (step != 0 || part != 0) {
+             switch (part) {
+                    case 0: if(!$('#sync').hasClass('active-tab')){$('#sync').click();} break;
+                    case 1: if(!$('#add-anime').hasClass('active-tab')){$('#add-anime').click();} break;
+                    case 2: if(!$('#add-feed').hasClass('active-tab')){$('#add-feed').click();} break;
+                    case 3: if(!$('#change-settings').hasClass('active-tab')){$('#change-settings').click();} break;
+                }
         }
-        $('.tutorial-overlay').first().show().addClass('tutorial-active');
-    } else {
-        switch (pageState.tutorial.tutorialPart) {
-            case 0: if(!$('#sync').hasClass('active-tab')){$('#sync').click();} break;
-            case 1: if(!$('#add-anime').hasClass('active-tab')){$('#add-anime').click();} break;
-            case 2: if(!$('#add-feed').hasClass('active-tab')){$('#add-feed').click();} break;
-            case 3: if(!$('#change-settings').hasClass('active-tab')){$('#change-settings').click();} break;
+    }, 400);
+
+    $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"']").show().addClass('tutorial-active');
+    setTimeout(() => {
+        if (step == 0 && part == 0) {
+            if(!$('#sync').hasClass('active-tab')){
+                $('#sync').click();
+            }
+            $('.tutorial-overlay').first().css('background-color','unset').show().addClass('tutorial-active');
+            $('.tutorial-overlay').first().children('.tutorial-bubble').show();
+        
+        } else {
+            if (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
+            switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
+                case "follow":
+                    var target = pageState.tutorial.tutorialPath[part].steps[step].trigger;
+                    var highlight = $(`div[data-section-number=` + part + `] div[data-step=` + step + `]`);
+                    this.pollVisibility(target, highlight);
+                        
+                    break;
+                }
+            }
+            $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"']").css('background-color','unset');
+            $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"'] .tutorial-bubble").show();
         }
+    }, 400);
 
-        $(".tutorial-part[data-section-number='"+ pageState.tutorial.tutorialPart +"'] .tutorial-overlay[data-step='"+ pageState.tutorial.tutorialStep +"']").show().addClass('tutorial-active');
-    }
-
-    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].tab +` - <span title="Total Tutorial Pages">` + (pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPart].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length) + `</span>`;
+    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[part].tab +` - <span title="Total Tutorial Pages">` + (pageState.tutorial.tutorialPath[part].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length) + `</span>`;
+    
 }
 
 FeedMeAnime.getDataUri = function (url, callback) {
@@ -960,6 +995,21 @@ FeedMeAnime.getDataUri = function (url, callback) {
         }
     }
 }
+
+FeedMeAnime.pollVisibility = function (targetId, highlight) {
+    var target = $(targetId);
+    if (target.is(":visible")) {
+      var top = target.offset().top - 5; 
+      var left = target.offset().left - 5; /*parseInt(target.css('padding-left').trimRight('px'), 10) (parseInt(target.css('margin-top'), 10)*/
+      
+      highlight.css('top', top + 'px');
+      highlight.css('left', left + 'px');
+      highlight.css('height', (target.height() + parseInt(target.css('padding-top')) + parseInt(target.css('padding-bottom')) + 10) + 'px');
+      highlight.css('width', (target.width() + parseInt(target.css('padding-left')) + parseInt(target.css('padding-right')) + 10)  + 'px'); 
+    } else {
+        setTimeout(this.pollVisibility(targetId, highlight), 600);
+    }
+  }
 
 Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;

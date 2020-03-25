@@ -160,11 +160,10 @@
             },
             "step3": {
                 "number": 2,
+                "trigger": "#feed-controls",
+                "triggerBehaviour": "follow",
                 "highlight": {
-                    "top": "340px",
-                    "left": "35px",
-                    "height": "110px",
-                    "width": "465px"
+                    "follow": "#feed-controls"
                 },
                 "bubble": {
                     "top": "-200px",
