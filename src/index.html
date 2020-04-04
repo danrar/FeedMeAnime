@@ -101,10 +101,12 @@
           </div>
         </div>
         <div class="setting-option-filters">
-          <span>Filters</span>
+          <span>Filters</span><span id="filter-changes-warning">Unsaved filter changes!</span><br />
+          <select id="filters-feed-select"></select>
           <div id="filter-configuration"></div>
         </div>
         <div class="setting-options-archive">
+          <span>Archive</span>
           <div id="archive-list">
           </div>
         </div>
@@ -179,35 +181,12 @@
         <i class="fas fa-times-circle fa-3x tutorial-end-button" title="End tutorial"></i>
         <i class="fas fa-arrow-alt-circle-right fa-3x" id="tutorial-skip-part-button" title="Skip to next part"></i>
         <div id="tutorial-controls-text"></div>
-        <div id="pips" style="
-    width: 110px;
-    height: 5px;
-">
-        <div id="pip1" style="
-    width: 23px;
-    height: 5px;
-    background-color: blue;
-    display: inline-block;
-"></div>
-        <div id="pip2" style="
-    width: 23px;
-    height: 5px;
-    background-color: white;
-    display: inline-block;
-"></div>
-        <div id="pip3" style="
-    width: 23px;
-    height: 5px;
-    background-color: white;
-    display: inline-block;
-"></div>
-        <div id="pip4" style="
-    width: 23px;
-    height: 5px;
-    background-color: white;
-    display: inline-block;
-"></div>
-    </div>
+        <div id="pips">
+          <div id="pip1" class="pip"></div>
+          <div id="pip2" class="pip"></div>
+          <div id="pip3" class="pip"></div>
+          <div id="pip4" class="pip"></div>
+        </div>
       </div>
     </div>
 

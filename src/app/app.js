@@ -40,7 +40,7 @@ const pageState = {
     },
     seenHashes: [],
     archivedObjects: [],
-    filters: {},
+    filters: [],
     thumbnails: [],
     lastCacheTime: new Date(),
     loadTime: $.now(),
@@ -115,6 +115,8 @@ FeedMeAnime.initialize = async function () {
     }
 
     FeedMeAnime.setSettings();
+
+    //pageState.filters.push({ title: "Nyaa.si", field: "nyaa:categoryId", operator: "equals", value: "1_2" });
     //_.set(pageState.filters, "Nyaa.si", "nyaa:categoryId,1_2");
 
     $("head").append($('<link rel="stylesheet type="text/css" />').attr("href", `content/css/${pageState.settings.theme}.css`));
@@ -307,18 +309,16 @@ FeedMeAnime.sync = async function () {
     });
 }
 
-FeedMeAnime.filterObjects = function (obj, filterString) {
+FeedMeAnime.processFilters = function(obj, filters) {
+    _.forEach(filters, (val) => {
+        this.filterObjects(obj, val.field, val.value)
+    })
+}
+
+FeedMeAnime.filterObjects = function (obj, filterField, filterValue) {
     var objects = [];
-    if (filterString) {
-        var filters = filterString.split(';');
-        for (var filter in filters) {
-            var parts = filters[filter].split(',');
-            objects = this.getObjects(obj, parts[0], parts[1]);
-        }
-    }
-    else {
-        objects = obj;
-    }
+
+    objects = this.getObjects(obj, filterField, filterValue);
 
     return objects;
 }
@@ -499,33 +499,70 @@ FeedMeAnime.reloadFeeds = function () {
     }
 }
 
-FeedMeAnime.reloadFilters = function () {
-    $("#filter-configuration").html(`
-        <input type="text" class="rq-form-element" id="filter-feed-input"/>
-        <input type="text" class="rq-form-element" id="fitler-value-input"/>
-        <div class="icon" id="add-filter">
-            <i class="fa fa-arrow-alt-circle-right"></i>
-        </div
-    `);
+FeedMeAnime.reloadSettingsFilters = function () {
+    $("#filters-feed-select").html('');
+    _.forEach(pageState.rssFeeds, (feed) => {
+        const opts = $("<option/>").attr("value", feed.title).text(feed.title);
+        $("#filters-feed-select").append(opts);
+    });
+    $("#filters-feed-select option").first().attr("selected", "selected");
+    this.reloadFeedFilters();
+}
 
-    if (Object.keys(pageState.filters).length > 0) {
-        for (let key in pageState.filters) {
-            const filterVal = _.get(pageState.filters, key);
-            $("#filter-configration").prepend(`
-                <div class="filter">
-                    <div data-feed="${key}" class="filter-feed">
-                        ${key}
-                    </div>
-                    <div data-value="${filterVal}" class="fitler-value">
-                        ${filterVal}
+
+FeedMeAnime.reloadFeedFilters = function () {
+    var feed = $("#filters-feed-select").children("option").filter(":selected").attr('value');
+    $("#filter-configuration").html('');
+
+    var filters = this.getObjects(pageState.filters, 'title', feed)
+    if (Object.keys(filters).length > 0) {
+        _.forEach(filters, (filter) => {
+            var operator = "", operatorNot = "";
+            switch (filter.operator){
+                case "equals":
+                    operator = "selected=selected";
+                    break;
+                case "notEquals":
+                    operatorNot = "selected=selected";
+                    break;
+            }
+
+            $("#filter-configuration").prepend(`
+                <div class="filter" data-feed="${feed}">
+                    <input type="text" class="rq-form-element filter-field-input" data-field="${filter.field}" value="${filter.field}" />
+                    <select class="filter-operator" id="filter" name="operator">
+                      <option value="equals" ${operator}>Equals</option>
+                      <option value="notEquals" ${operatorNot}>Not equals</option>
+                    </select>
+                    <input type="text" class="rq-form-element filter-value-input" data-value="${filter.value}" value="${filter.value}" />
+                    <div class="icon update-filter">
+                        <i class="fas fa-pencil-alt"></i>
                     </div>
                     <div class="icon remove-filter">
                         <i class="fa fa-times"></i>
                     </div>
                 </div>
             `);
-        }
+        });
     }
+
+    $("#filter-configuration").prepend(`
+        <div class="filter" id="filter-new" data-feed="${feed}">
+            <input type="text" class="rq-form-element filter-field-input" placeholder="Field Name" />
+            <select class="filter-operator" name="operator">
+              <option value="equals">Equals</option>
+              <option value="notEquals">Not equals</option>
+            </select>
+            <input type="text" class="rq-form-element filter-value-input" placeholder="Expected Value" />
+            <div class="icon" id="add-filter">
+                <i class="fa fa-arrow-alt-circle-right"></i>
+            </div>
+        </div>`);
+    $("#filter-new option").first().attr("selected", "selected");
+}
+
+FeedMeAnime.addFilter = async function (fFeed, fField, fOperator, fValue) {
+    pageState.filters.push({ title: fFeed, field: fField, operator: fOperator, value: fValue });
 }
 
 FeedMeAnime.reloadStorageStats = function () {
@@ -597,18 +634,20 @@ FeedMeAnime.loadSuggestions = async function () {
 
 FeedMeAnime.updateFeedContents = async function (feedTitle = null, override = false) {
     for (var i = 0; i < pageState.rssFeeds.length; i++) {
-        if ((feedTitle == null || pageState.rssFeeds[i].title == feedTitle) && (pageState.rssFeeds[i].active || override) ){
+        var feedName = pageState.rssFeeds[i].title;
+        if ((feedTitle == null || feedName == feedTitle) && (pageState.rssFeeds[i].active || override) ){
             const feed = await this.getRss(pageState.rssFeeds[i]);
-            if (feed != null) {
+            if (feed != null)  {
                 var objects = _.get(feed, "rss.channel.item");
-    
-                if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
-                    objects = this.getObjects(_.get(feed, "rss.channel.item"), _.get(pageState.filters, pageState.rssFeeds[i].title));
-                }
-    
+                
+                var filteredObjects = await this.applyFilters(feedName, objects);
+                //if (_.has(pageState.filters, pageState.rssFeeds[i].title)) {
+                //    objects = this.getObjects(_.get(feed, "rss.channel.item"), _.get(pageState.filters, pageState.rssFeeds[i].title));
+                //}
+                
                 if (pageState.rssContents) {
-                    if (this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title).length < 1) {
-                        pageState.rssContents.push({ title: pageState.rssFeeds[i].title, contents: objects });
+                    if (this.getObjects(pageState.rssContents, 'title', feedName).length < 1) {
+                        pageState.rssContents.push({ title: feedName, contents: filteredObjects });
 
                         //let feed = this.getObjects(pageState.rssContents, 'title', pageState.rssFeeds[i].title)[0];
                         //_.forEach(feed.Contents, (val) => { 
@@ -616,11 +655,34 @@ FeedMeAnime.updateFeedContents = async function (feedTitle = null, override = fa
                         //});
                     }
                 } else {
-                    pageState.rssContents = [{ title: pageState.rssFeeds[i].title, contents: objects }];
+                    pageState.rssContents = [{ title: feedName, contents: filteredObjects }];
                 }  
             }
         }
     }
+}
+
+FeedMeAnime.applyFilters = async function(feed, feedObjects) {
+    var filters = this.getObjects(pageState.filters, 'title', feed);
+    var objects = feedObjects;
+
+    _.forEach(filters, (filter) => {
+        switch (filter.operator) {
+            case "equals":
+                objects = this.getObjects(objects, filter.field, filter.value);
+                break;
+
+            case "notEquals":
+                var objectsToRemove = this.getObjects(objects, filter.field, filter.value);
+
+                _.pullAll(objects, objectsToRemove);
+                
+                break;
+        }
+        
+    });
+
+    return objects;
 }
 
 FeedMeAnime.loadFuzzyFeedStrings = async function () {
@@ -909,14 +971,6 @@ FeedMeAnime.checkTutorialNavigation = function() {
             case "toggle": 
                 $(pageState.tutorial.tutorialPath[part].steps[step].trigger).click(); 
                 break;
-            /*case "follow":
-                var target = $(pageState.tutorial.tutorialPath[part].steps[step].trigger);
-                var highlight = $(`div[data-section-number=` + part + `] div[data-step=` + step + `]`);
-                highlight.css('top',target.offset().top + 'px');
-                highlight.css('left',target.offset().left + 'px');
-                highlight.css('height',target.height() + 'px');
-                highlight.css('width',target.width()  + 'px');
-                break;*/
         }
     }
 
@@ -925,6 +979,12 @@ FeedMeAnime.checkTutorialNavigation = function() {
     }
 
     var lastPart = pageState.tutorial.tutorialPath[pageState.tutorial.tutorialPath.length-1];
+
+    if (lastPart.partNumber == part) {
+        $('#tutorial-skip-part-button').addClass('tutorial-skip-part-inactive');
+    } else {
+        $('#tutorial-skip-part-button').removeClass('tutorial-skip-part-inactive');
+    }
 
     if (lastPart.partNumber == part && lastPart.steps[lastPart.steps.length-1].stepNumber == step) {
         $('.bubble-navigate-right').addClass('tutorial-end-hidden');
@@ -949,7 +1009,7 @@ FeedMeAnime.loadTutorialStep = function() {
                     case 3: if(!$('#change-settings').hasClass('active-tab')){$('#change-settings').click();} break;
                 }
         }
-    }, 400);
+    }, 100);
 
     $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"']").show().addClass('tutorial-active');
     setTimeout(() => {
@@ -964,9 +1024,15 @@ FeedMeAnime.loadTutorialStep = function() {
             if (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour != undefined) {
             switch (pageState.tutorial.tutorialPath[part].steps[step].triggerBehaviour) {
                 case "follow":
-                    var target = pageState.tutorial.tutorialPath[part].steps[step].trigger;
+                    var target = $(pageState.tutorial.tutorialPath[part].steps[step].trigger);
                     var highlight = $(`div[data-section-number=` + part + `] div[data-step=` + step + `]`);
-                    this.pollVisibility(target, highlight);
+                    var top = target.offset().top - 5; 
+                    var left = target.offset().left - 5; /*parseInt(target.css('padding-left').trimRight('px'), 10) (parseInt(target.css('margin-top'), 10)*/
+                    
+                    highlight.css('top', top + 'px');
+                    highlight.css('left', left + 'px');
+                    highlight.css('height', (target.height() + parseInt(target.css('padding-top')) + parseInt(target.css('padding-bottom')) + 10) + 'px');
+                    highlight.css('width', (target.width() + parseInt(target.css('padding-left')) + parseInt(target.css('padding-right')) + 10)  + 'px'); 
                         
                     break;
                 }
@@ -974,10 +1040,20 @@ FeedMeAnime.loadTutorialStep = function() {
             $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"']").css('background-color','unset');
             $(".tutorial-part[data-section-number='"+ part +"'] .tutorial-overlay[data-step='"+ step +"'] .tutorial-bubble").show();
         }
-    }, 400);
+    }, 800);
 
-    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[part].tab +` - <span title="Total Tutorial Pages">` + (pageState.tutorial.tutorialPath[part].partNumber + 1) + `/` + pageState.tutorial.tutorialPath.length) + `</span>`;
-    
+    $('#tutorial-controls-text').html(``+ pageState.tutorial.tutorialPath[part].tab);
+    this.setPips(part);
+}
+
+FeedMeAnime.setPips = function (part) {
+    var html = "";
+    _.forEach(pageState.tutorial.tutorialPath, (pip) => {
+        var active = pip.partNumber <= part ? " pip-active" : "";
+        html = html + `<div class="pip` + active + `" data-title="` + pip.tab + `" title="` + pip.tab + `" data-partNumber="` + pip.partNumber +`"></div>`
+    });
+
+    $('#pips').html(html);
 }
 
 FeedMeAnime.getDataUri = function (url, callback) {
@@ -995,21 +1071,6 @@ FeedMeAnime.getDataUri = function (url, callback) {
         }
     }
 }
-
-FeedMeAnime.pollVisibility = function (targetId, highlight) {
-    var target = $(targetId);
-    if (target.is(":visible")) {
-      var top = target.offset().top - 5; 
-      var left = target.offset().left - 5; /*parseInt(target.css('padding-left').trimRight('px'), 10) (parseInt(target.css('margin-top'), 10)*/
-      
-      highlight.css('top', top + 'px');
-      highlight.css('left', left + 'px');
-      highlight.css('height', (target.height() + parseInt(target.css('padding-top')) + parseInt(target.css('padding-bottom')) + 10) + 'px');
-      highlight.css('width', (target.width() + parseInt(target.css('padding-left')) + parseInt(target.css('padding-right')) + 10)  + 'px'); 
-    } else {
-        setTimeout(this.pollVisibility(targetId, highlight), 600);
-    }
-  }
 
 Array.prototype.remove = function() {
     var what, a = arguments, L = a.length, ax;
@@ -1086,7 +1147,7 @@ $('#change-settings').click(function () {
     $('#overlay').animate({
         opacity: 1
     }, 500, async function () {
-        await FMA.reloadFilters();
+        await FMA.reloadSettingsFilters();
         await FMA.reloadStorageStats();
         await FMA.reloadArchivedObjects();
         $('.active-tab').removeClass('active-tab');
@@ -1237,11 +1298,45 @@ $(document).on('click', '.deactivate-feed', async function () {
     await FMA.clearCache();
 })
 
+$(document).on('change', '#filters-feed-select', async function () {
+    $('#filters-feed-select option[selected=selected]').removeAttr('selected');
+    var selected = $(this[this.selectedIndex]);
+    selected.attr('selected', 'selected');
+    FMA.reloadFeedFilters();
+});
+
+$(document).on('change', '.filter-operator', async function () {
+    $(this).find('option[selected=selected]').removeAttr('selected');
+    var selected = $(this[this.selectedIndex]);
+    selected.attr('selected', 'selected');
+    $(this).parent().find('.update-filter').click();
+});
+
 $(document).on('click', '.remove-filter', async function () {
-    delete pageState.filters[$(this).parent().find('.filter-feed').data('feed')];
-    await FMA.storage.sync.setItem("cacheFilters", pageState.filters);
-    await FMA.reloadFilters();
+    var feedFilters = FMA.getObjects(pageState.filters, 'title', $(this).parent().data('feed'));
+    var exactFilter = FMA.getObjects(feedFilters, 'field', $(this).parent().find('.filter-field-input').val());
+    
+    pageState.filters.splice(pageState.filters.indexOf(exactFilter[0], 1));
+    //delete pageState.filters[$(this).parent().data('feed')];
+    $('#filter-changes-warning').show();
+    await FMA.reloadFeedFilters();
     await FMA.clearCache();
+})
+
+$(document).on('click', '.update-filter', async function () {
+    var feed = $(this).parent().data('feed');
+    var field = $(this).parent().find('.filter-field-input').val();
+
+    _.remove(pageState.filters, function(e) {
+        return e.title === feed && e.field === field;
+    });
+    
+    var operator = $(this).parent().find('.filter-operator [selected=selected]').attr('value');
+    var value = $(this).parent().find('.filter-value-input').val();
+    await FMA.addFilter(feed, field, operator, value);
+    $('#filter-changes-warning').show();
+    await FMA.reloadFeedFilters();
+    //await FMA.clearCache();
 })
 
 $(document).on('click', '#save-settings', async function () {
@@ -1258,7 +1353,9 @@ $(document).on('click', '#save-settings', async function () {
     pageState.settings.labels = $('#labels-checkbox').prop('checked');
     pageState.settings.tutorial = $('#tutorial-checkbox').prop('checked');
     await FMA.storage.sync.setItem("filters", pageState.filters);
+    $('#filter-changes-warning').hide();
     await FMA.storage.sync.setItem("cacheSettings", pageState.settings);
+    await FMA.clearCache();
     location.reload();
 })
 
@@ -1598,7 +1695,7 @@ $(document).on('click', '#tutorial-skip-part-button', async function () {
         pageState.tutorial.tutorialPart++;
         pageState.tutorial.tutorialStep = 0;
     } else {
-        FMA.endTutorial();
+        /*FMA.endTutorial();*/
         return;
     }
 
@@ -1615,11 +1712,14 @@ $(document).on('click', '.tutorial-end-button', async function () {
 });
 
 $(document).on('click', '#add-filter', async function () {
-    var feed = $('#filter-feed-input').val();
-    var value = $('#filter-value-input').val();
-    await FMA.addFilter(feed, value);
-    await FMA.reloadFilters();
-    await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
+    var feed = $('#filter-new').attr('data-feed');
+    var field = $('#filter-new .filter-field-input').val();
+    var operator = $('#filter-new .filter-operator [selected=selected]').attr('value');
+    var value = $('#filter-new .filter-value-input').val();
+    await FMA.addFilter(feed, field, operator, value);
+    $('#filter-changes-warning').show();
+    await FMA.reloadFeedFilters();
+    //await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
     await FMA.clearCache();
 });
 
@@ -1629,10 +1729,13 @@ $(document).on('click', '#clear-storage', async function () {
 
 $('#filter-value-input').keypress(async function (e) {
     if (e.which == 13) {
-        var feed = $('#filter-feed-input').val();
-        var value = $('#filter-value-input').val();
-        await FMA.addFilter(feed, value);
-        await FMA.reloadFilters();
+        var feed = $('#filter-new').attr('data-feed');
+        var field = $('#filter-new .filter-field-input').val();
+        var operator = $('#filter-new .filter-operator [selected=selected]').attr('value');
+        var value = $('#filter-new .filter-value-input').val();
+        await FMA.addFilter(feed, field, operator, value);
+        $('#filter-changes-warning').show();
+        await FMA.reloadFeedFilters();
         await FMA.storage.sync.setItem("rssFeeds", pageState.rssFeeds);
         await FMA.clearCache();
         return false;

@@ -543,9 +543,27 @@ Settings
 	margin-left: 20px;
 }
 
+#settings #filter-changes-warning {
+	color: red;
+	float: right;
+	display: none;
+}
+
 #settings .filter-feed, #settings .filter-value, #settings #storage-local-text, #settings #storage-sync-text {
 	font-weight: normal;
     display: inline-block;
+}
+
+#settings #filters-feed-select {
+	margin-top: 5px;
+}
+
+#settings #filter-configuration input {
+	width: 140px;
+}
+
+#settings #filter-configuration select {
+	height: 25px;
 }
 
 #save-settings {
@@ -649,8 +667,34 @@ Tutorial
     font-weight: bold;
     font-size: 16pt;
     float: right;
-    margin: 2px 10px 0 0;
+    margin: -7px 10px 2px 0;
+    min-width: 120px;
 }
+
+#tutorial #tutorial-part-controls #tutorial-skip-part-button {
+}
+
+#tutorial #tutorial-part-controls .tutorial-skip-part-inactive {
+	color: #737373;
+}
+
+#tutorial #tutorial-part-controls #pips {
+	margin: 2px 0 0 0;
+}
+
+#tutorial #tutorial-part-controls #pips .pip{
+	width: 23px;
+    height: 10px;
+    background-color: white;
+    display: inline-block;
+    border: 1px solid #000;
+    margin: 0 2px 0 0;
+}
+
+#tutorial #tutorial-part-controls #pips .pip-active {
+	background-color: #2e51a2;
+}
+
 
 #tutorial #tutorial-contents .disabled {
 	pointer-events: none; 
